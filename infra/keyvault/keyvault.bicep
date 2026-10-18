@@ -8,7 +8,7 @@ var resourceGroupSplits = split(resourcegroup().name, '-')
 var environment = resourceGroupSplits[3]
 var projectName = resourceGroupSplits[1]
 
-resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: 'kv-${projectName}-${environment}'
   location: resourcegroup().location
   properties: {
@@ -20,12 +20,14 @@ resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-resource adminRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(vault.id, adminPrincipalId, secretsOfficerRoleId)
-  scope: vault
+resource role 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(kv.id, adminPrincipalId, secretsOfficerRoleId)
+  scope: kv
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', secretsOfficerRoleId)
     principalId: adminPrincipalId
     principalType: 'User'
   }
 }
+
+output keyVaultName string = kv.name
