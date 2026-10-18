@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/shared/">
+    <Project Path="../Contracts/Contracts.csproj" />
+  </Folder>
+  <Project Path="WorkerTemplate.csproj" />
+</Solution>
