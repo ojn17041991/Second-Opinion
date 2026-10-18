@@ -1,8 +1,4 @@
-@description('Environment name, used as the name suffix.')
-param environment string
-
-@description('Project name, shortened for resource naming.')
-param projectName string
+targetScope = 'resourceGroup'
 
 @description('Object ID of the user or group allowed to manage secrets.')
 param adminPrincipalId string
