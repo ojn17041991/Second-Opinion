@@ -15,7 +15,9 @@ param purposes array = [
   'monitor'
 ]
 
-resource groups 'Microsoft.Resources/resourceGroups@2024-03-01' = [for purpose in purposes: {
+resource rgs 'Microsoft.Resources/resourceGroups@2024-03-01' = [for purpose in purposes: {
   name: 'rg-${projectName}-${purpose}-${environment}'
   location: location
 }]
+
+output rgNames array = [for rg in rgs: rg.name]
