@@ -3,6 +3,10 @@ targetScope = 'subscription'
 @description('Environment name, used as the name suffix.')
 param environment string
 
+@description('Project name, shortened for resource naming.')
+param projectname string
+
+@description('Location in which the resource should be created.')
 param location string
 
 param purposes array = [
@@ -12,6 +16,6 @@ param purposes array = [
 ]
 
 resource groups 'Microsoft.Resources/resourceGroups@2024-03-01' = [for purpose in purposes: {
-  name: 'rg-so-${purpose}-${environment}'
+  name: 'rg-${projectname}-${purpose}-${environment}'
   location: location
 }]
