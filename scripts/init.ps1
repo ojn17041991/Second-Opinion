@@ -20,6 +20,8 @@ if (-not (Test-Path "src/Gateway")) {
     dotnet sln src/Gateway/Gateway.slnx add src/Gateway/Gateway.csproj
     dotnet sln src/Gateway/Gateway.slnx add src/Contracts/Contracts.csproj --solution-folder shared
     dotnet add src/Gateway/Gateway.csproj reference src/Contracts/Contracts.csproj
+    dotnet add src/Gateway/Gateway.csproj package Azure.Extensions.AspNetCore.Configuration.Secrets --no-restore
+    dotnet add src/Gateway/Gateway.csproj package Azure.Identity --no-restore
     dotnet restore src/Gateway/Gateway.csproj
 } else {
     Write-Host "Gateway already exists."
@@ -32,6 +34,9 @@ if (-not (Test-Path "src/WorkerTemplate")) {
     dotnet sln src/WorkerTemplate/WorkerTemplate.slnx add src/WorkerTemplate/WorkerTemplate.csproj
     dotnet sln src/WorkerTemplate/WorkerTemplate.slnx add src/Contracts/Contracts.csproj --solution-folder shared
     dotnet add src/WorkerTemplate/WorkerTemplate.csproj reference src/Contracts/Contracts.csproj
+    dotnet add src/WorkerTemplate/WorkerTemplate.csproj package Azure.Extensions.AspNetCore.Configuration.Secrets --no-restore
+    dotnet add src/WorkerTemplate/WorkerTemplate.csproj package Azure.Identity --no-restore
+    dotnet restore src/WorkerTemplate/WorkerTemplate.csproj
 } else {
     Write-Host "WorkerTemplate already exists."
 }
