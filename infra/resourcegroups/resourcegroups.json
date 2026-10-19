@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.48.1.52935",
+      "templateHash": "15492394022922173385"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "allowedValues": [
+        "dev",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name, used as the name suffix."
+      }
+    },
+    "projectName": {
+      "type": "string",
+      "metadata": {
+        "description": "Project name, shortened for resource naming."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location in which the resource should be created."
+      }
+    },
+    "purposes": {
+      "type": "array",
+      "defaultValue": [
+        "shared",
+        "apps",
+        "monitor"
+      ]
+    }
+  },
+  "resources": [
+    {
+      "copy": {
+        "name": "rgs",
+        "count": "[length(parameters('purposes'))]"
+      },
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2024-03-01",
+      "name": "[format('rg-{0}-{1}-{2}', parameters('projectName'), parameters('purposes')[copyIndex()], parameters('environment'))]",
+      "location": "[parameters('location')]"
+    }
+  ],
+  "outputs": {
+    "rgNames": {
+      "type": "array",
+      "copy": {
+        "count": "[length(range(0, length(parameters('purposes'))))]",
+        "input": "[format('rg-{0}-{1}-{2}', parameters('projectName'), parameters('purposes')[range(0, length(parameters('purposes')))[copyIndex()]], parameters('environment'))]"
+      }
+    }
+  }
+}

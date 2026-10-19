@@ -1,0 +1,96 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.48.1.52935",
+      "templateHash": "144033392191132606"
+    }
+  },
+  "parameters": {
+    "topics": {
+      "type": "array",
+      "defaultValue": [
+        {
+          "name": "prompt",
+          "subscriptions": [
+            "ai"
+          ]
+        }
+      ]
+    }
+  },
+  "variables": {
+    "resourceGroupSplits": "[split(resourceGroup().name, '-')]",
+    "environment": "[variables('resourceGroupSplits')[3]]",
+    "projectName": "[variables('resourceGroupSplits')[1]]",
+    "subscriptions": "[flatten(map(range(0, length(parameters('topics'))), lambda('i', map(parameters('topics')[lambdaVariables('i')].subscriptions, lambda('s', createObject('topicIndex', lambdaVariables('i'), 'topic', parameters('topics')[lambdaVariables('i')].name, 'subscription', lambdaVariables('s')))))))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2024-01-01",
+      "name": "[format('sb-{0}-{1}', variables('projectName'), variables('environment'))]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "minimumTlsVersion": "1.2",
+        "disableLocalAuth": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "copy": {
+        "name": "sbt",
+        "count": "[length(parameters('topics'))]"
+      },
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}', format('sb-{0}-{1}', variables('projectName'), variables('environment')), format('sbt-{0}-{1}-{2}', variables('projectName'), parameters('topics')[copyIndex()].name, variables('environment')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', format('sb-{0}-{1}', variables('projectName'), variables('environment')))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "sbts",
+        "count": "[length(variables('subscriptions'))]"
+      },
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}/{2}', format('sb-{0}-{1}', variables('projectName'), variables('environment')), format('sbt-{0}-{1}-{2}', variables('projectName'), parameters('topics')[variables('subscriptions')[copyIndex()].topicIndex].name, variables('environment')), format('sbts-{0}-{1}-{2}-{3}', variables('projectName'), variables('subscriptions')[copyIndex()].topic, variables('subscriptions')[copyIndex()].subscription, variables('environment')))]",
+      "properties": {
+        "maxDeliveryCount": 10,
+        "deadLetteringOnMessageExpiration": true,
+        "lockDuration": "PT5M"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', format('sb-{0}-{1}', variables('projectName'), variables('environment')), format('sbt-{0}-{1}-{2}', variables('projectName'), parameters('topics')[variables('subscriptions')[copyIndex()].topicIndex].name, variables('environment')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "serviceBusName": {
+      "type": "string",
+      "value": "[format('sb-{0}-{1}', variables('projectName'), variables('environment'))]"
+    },
+    "serviceBusTopicNames": {
+      "type": "array",
+      "copy": {
+        "count": "[length(range(0, length(parameters('topics'))))]",
+        "input": "[format('sbt-{0}-{1}-{2}', variables('projectName'), parameters('topics')[range(0, length(parameters('topics')))[copyIndex()]].name, variables('environment'))]"
+      }
+    },
+    "serviceBusSubscriptionNames": {
+      "type": "array",
+      "copy": {
+        "count": "[length(range(0, length(variables('subscriptions'))))]",
+        "input": "[format('sbts-{0}-{1}-{2}-{3}', variables('projectName'), variables('subscriptions')[range(0, length(variables('subscriptions')))[copyIndex()]].topic, variables('subscriptions')[range(0, length(variables('subscriptions')))[copyIndex()]].subscription, variables('environment'))]"
+      }
+    }
+  }
+}

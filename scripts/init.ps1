@@ -1,3 +1,6 @@
+# This script initializes the project structures for the Second Opinion solution; Gateway, Contracts, and WorkerTemplate.
+# Only empty project structures are created along with expected project and package references. Most of the actual implementation will need to be added manually.
+
 # Always run from the repo root (the parent of the scripts folder).
 Push-Location (Join-Path $PSScriptRoot "..")
 
