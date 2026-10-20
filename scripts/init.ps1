@@ -16,6 +16,29 @@ if (-not (Test-Path "src/Contracts")) {
     Write-Host "Contracts already exists."
 }
 
+# Create Messaging if it doesn't already exist.
+if (-not (Test-Path "src/Messaging")) {
+    dotnet new sln -n Messaging -o src/Messaging
+    dotnet new classlib -n Messaging -o src/Messaging/Messaging -f net10.0 --no-restore
+    dotnet new xunit -n Messaging.UnitTests -o src/Messaging/Messaging.UnitTests -f net10.0 --no-restore
+
+    # Remove the default Class1.cs file created by the class library template.
+    Remove-Item "src/Messaging/Messaging/Class1.cs"
+
+    dotnet sln src/Messaging/Messaging.slnx add src/Messaging/Messaging/Messaging.csproj --solution-folder src
+    dotnet sln src/Messaging/Messaging.slnx add src/Messaging/Messaging.UnitTests/Messaging.UnitTests.csproj --solution-folder tests
+    dotnet add src/Messaging/Messaging.UnitTests/Messaging.UnitTests.csproj reference src/Messaging/Messaging/Messaging.csproj
+
+    dotnet add src/Messaging/Messaging/Messaging.csproj package Azure.Identity --no-restore
+    dotnet add src/Messaging/Messaging/Messaging.csproj package Azure.Messaging.ServiceBus --no-restore
+    dotnet add src/Messaging/Messaging/Messaging.csproj package Microsoft.Extensions.Azure --no-restore
+    dotnet add src/Messaging/Messaging/Messaging.csproj package Microsoft.Extensions.Hosting.Abstractions --no-restore
+
+    dotnet restore src/Messaging/Messaging.slnx
+} else {
+    Write-Host "Messaging already exists."
+}
+
 # Create Gateway if it doesn't already exist.
 if (-not (Test-Path "src/Gateway")) {
     dotnet new sln -n Gateway -o src/Gateway
