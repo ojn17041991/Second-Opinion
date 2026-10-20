@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="Contracts.csproj" />
+  <Folder Name="/src/">
+    <Project Path="Contracts/Contracts.csproj" />
+  </Folder>
 </Solution>

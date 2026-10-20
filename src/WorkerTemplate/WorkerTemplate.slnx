@@ -1,6 +1,17 @@
 <Solution>
   <Folder Name="/shared/">
-    <Project Path="../Contracts/Contracts.csproj" />
+    <Project Path="../Contracts/Contracts/Contracts.csproj" />
   </Folder>
-  <Project Path="WorkerTemplate.csproj" />
+  <Folder Name="/src/">
+    <Project Path="Application/Application.csproj" />
+    <Project Path="Domain/Domain.csproj" />
+    <Project Path="Infrastructure/Infrastructure.csproj" />
+    <Project Path="Worker/Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="Domain.UnitTests/Domain.UnitTests.csproj" />
+    <Project Path="Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="Worker.UnitTests/Worker.UnitTests.csproj" />
+  </Folder>
 </Solution>

@@ -1,6 +1,13 @@
 <Solution>
   <Folder Name="/shared/">
-    <Project Path="../Contracts/Contracts.csproj" />
+    <Project Path="../Contracts/Contracts/Contracts.csproj" />
   </Folder>
-  <Project Path="Gateway.csproj" />
+  <Folder Name="/src/">
+    <Project Path="Gateway/Gateway.csproj" />
+    <Project Path="Infrastructure/Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="Gateway.UnitTests/Gateway.UnitTests.csproj" />
+    <Project Path="Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+  </Folder>
 </Solution>
