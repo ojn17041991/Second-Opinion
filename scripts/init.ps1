@@ -40,6 +40,25 @@ if (-not (Test-Path "src/Messaging")) {
     Write-Host "Messaging already exists."
 }
 
+# Create Configuration if it doesn't already exist.
+if (-not (Test-Path "src/Configuration")) {
+    dotnet new sln -n Configuration -o src/Configuration
+    dotnet new classlib -n Configuration -o src/Configuration/Configuration -f net10.0 --no-restore
+    dotnet new xunit -n Configuration.UnitTests -o src/Configuration/Configuration.UnitTests -f net10.0 --no-restore
+
+    # Remove the default files created by the class library and xunit templates.
+    Remove-Item "src/Configuration/Configuration/Class1.cs"
+    Remove-Item "src/Configuration/Configuration.UnitTests/UnitTest1.cs"
+
+    dotnet sln src/Configuration/Configuration.slnx add src/Configuration/Configuration/Configuration.csproj --solution-folder src
+    dotnet sln src/Configuration/Configuration.slnx add src/Configuration/Configuration.UnitTests/Configuration.UnitTests.csproj --solution-folder tests
+    dotnet add src/Configuration/Configuration.UnitTests/Configuration.UnitTests.csproj reference src/Configuration/Configuration/Configuration.csproj
+
+    dotnet restore src/Configuration/Configuration.slnx
+} else {
+    Write-Host "Configuration already exists."
+}
+
 # Create Gateway if it doesn't already exist.
 if (-not (Test-Path "src/Gateway")) {
     dotnet new sln -n Gateway -o src/Gateway
