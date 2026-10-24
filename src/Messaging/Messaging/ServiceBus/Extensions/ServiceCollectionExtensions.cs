@@ -1,44 +1,104 @@
-﻿using Azure.Core;
-using Azure.Identity;
+﻿using System.Reflection;
+using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using Messaging.ServiceBus.Abstractions;
-using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Messaging.ServiceBus;
 
 /// <summary>
-/// Provides extension methods for registering Azure Service Bus messaging services in an <see
-/// cref="IServiceCollection"/>.
+/// Provides extension methods for registering Azure Service Bus messaging services.
 /// </summary>
-/// <remarks>Registers and configures <see cref="ServiceBusOptions"/>, adds a singleton <see
-/// cref="ServiceBusClient"/> created with <see cref="DefaultAzureCredential"/>, and registers <see
-/// cref="IMessagePublisher"/> with <see cref="ServiceBusMessagePublisher"/>.</remarks>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Azure Service Bus messaging services to the dependency injection container.
+    /// The default configuration section name for Service Bus settings.
     /// </summary>
-    /// <remarks>Registers <c>ServiceBusClient</c> as a singleton using the configured fully qualified
-    /// namespace and <c>DefaultAzureCredential</c>, and registers <c>IMessagePublisher</c> with
-    /// <c>ServiceBusMessagePublisher</c> as a singleton.</remarks>
-    /// <param name="services">The service collection to add registrations to.</param>
-    /// <param name="options">Configures the <c>ServiceBusOptions</c> used to create the <c>ServiceBusClient</c>.</param>
-    /// <param name="credential">The <c>TokenCredential</c> used to authenticate with Azure Service Bus.</param>
-    /// <returns>The same service collection so additional calls can be chained.</returns>
+    private const string SectionName = "ServiceBus";
+
+    /// <summary>
+    /// Adds Azure Service Bus messaging services to the dependency injection container by binding and validating
+    /// Service Bus options, registering a singleton <see cref="ServiceBusClient"/>, and registering the message
+    /// publisher implementation.
+    /// </summary>
+    /// <remarks>Requires a valid Service Bus configuration section matching <see cref="ServiceBusOptions"/>,
+    /// including the fully qualified namespace.</remarks>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configuration">The application configuration used to read the Service Bus settings section.</param>
+    /// <param name="credential">The token credential used to authenticate the <see cref="ServiceBusClient"/>.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+    /// <exception cref="InvalidOperationException">The Service Bus configuration section is missing or incomplete.</exception>
     public static IServiceCollection AddServiceBusMessaging(
         this IServiceCollection services,
-        ServiceBusOptions options,
+        IConfiguration configuration,
         TokenCredential credential)
     {
-        services.AddAzureClients(builder =>
+        var section = configuration.GetSection(SectionName);
+        ValidateConfigurationSection(section);
+        ValidateConfigurationProperties(section);
+
+        services
+            .AddOptions<ServiceBusOptions>()
+            .Configure(section.Bind)
+            .ValidateOnStart();
+
+        services.AddSingleton(sp =>
         {
-            builder.AddServiceBusClientWithNamespace(options.FullyQualifiedNamespace).WithCredential(credential);
+            var options = sp.GetRequiredService<IOptions<ServiceBusOptions>>();
+            return new ServiceBusClient(options.Value.FullyQualifiedNamespace, credential);
         });
 
-        services.AddSingleton(options);
         services.AddSingleton<IMessagePublisher, ServiceBusMessagePublisher>();
 
         return services;
+    }
+
+    /// <summary>
+    /// Validates that the required ServiceBus configuration section exists.
+    /// </summary>
+    /// <param name="section">The configuration section to validate.</param>
+    /// <exception cref="InvalidOperationException">The required ServiceBus configuration section is missing.</exception>
+    private static void ValidateConfigurationSection(IConfigurationSection section)
+    {
+        if (!section.Exists())
+        {
+            throw new InvalidOperationException(
+                $"ServiceBus configuration section '{SectionName}' is missing. " +
+                $"Ensure it is defined in appsettings.json with expected properties.");
+        }
+    }
+
+    /// <summary>
+    /// Validates that all public properties of <see cref="ServiceBusOptions"/> exist in the configuration
+    /// section and are not null or empty.
+    /// </summary>
+    /// <param name="section">The configuration section to validate.</param>
+    /// <exception cref="InvalidOperationException">Thrown when a required property is missing, null, or empty.</exception>
+    private static void ValidateConfigurationProperties(IConfigurationSection section)
+    {
+        var properties = typeof(ServiceBusOptions)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead && p.CanWrite && p.PropertyType == typeof(string));
+
+        var missingOrEmptyProperties = new List<string>();
+
+        foreach (var property in properties)
+        {
+            var value = section[property.Name];
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                missingOrEmptyProperties.Add(property.Name);
+            }
+        }
+
+        if (missingOrEmptyProperties.Count > 0)
+        {
+            var propertyList = string.Join(", ", missingOrEmptyProperties);
+            throw new InvalidOperationException(
+                $"ServiceBus configuration is incomplete. The following required properties are missing or empty: {propertyList}. " +
+                $"Ensure all properties are defined in appsettings.json under the '{SectionName}' section.");
+        }
     }
 }
