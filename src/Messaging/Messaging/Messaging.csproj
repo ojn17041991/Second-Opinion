@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Configuration\Configuration\Configuration.csproj" />
+  </ItemGroup>
+
 </Project>
