@@ -2,6 +2,7 @@
   <Folder Name="/shared/">
     <Project Path="../Contracts/Contracts/Contracts.csproj" />
     <Project Path="../Messaging/Messaging/Messaging.csproj" />
+    <Project Path="../Secrets/Secrets/Secrets.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="Application/Application.csproj" />
