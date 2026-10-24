@@ -22,8 +22,9 @@ if (-not (Test-Path "src/Messaging")) {
     dotnet new classlib -n Messaging -o src/Messaging/Messaging -f net10.0 --no-restore
     dotnet new xunit -n Messaging.UnitTests -o src/Messaging/Messaging.UnitTests -f net10.0 --no-restore
 
-    # Remove the default Class1.cs file created by the class library template.
+    # Remove the default files created by the class library and xunit templates.
     Remove-Item "src/Messaging/Messaging/Class1.cs"
+    Remove-Item "src/Messaging/Messaging.UnitTests/UnitTest1.cs"
 
     dotnet sln src/Messaging/Messaging.slnx add src/Messaging/Messaging/Messaging.csproj --solution-folder src
     dotnet sln src/Messaging/Messaging.slnx add src/Messaging/Messaging.UnitTests/Messaging.UnitTests.csproj --solution-folder tests
@@ -53,6 +54,10 @@ if (-not (Test-Path "src/Gateway")) {
     # Unit test projects, one per source project.
     dotnet new xunit -n Gateway.UnitTests -o src/Gateway/Gateway.UnitTests -f net10.0 --no-restore
     dotnet new xunit -n Infrastructure.UnitTests -o src/Gateway/Infrastructure.UnitTests -f net10.0 --no-restore
+    
+    # Remove the default UnitTest1.cs file created by the xunit template.
+    Remove-Item "src/Gateway/Gateway.UnitTests/UnitTest1.cs"
+    Remove-Item "src/Gateway/Infrastructure.UnitTests/UnitTest1.cs"
 
     # Add the projects to the solution.
     dotnet sln src/Gateway/Gateway.slnx add src/Gateway/Gateway/Gateway.csproj --solution-folder src
@@ -102,6 +107,12 @@ if (-not (Test-Path "src/WorkerTemplate")) {
     dotnet new xunit -n Application.UnitTests -o src/WorkerTemplate/Application.UnitTests -f net10.0 --no-restore
     dotnet new xunit -n Domain.UnitTests -o src/WorkerTemplate/Domain.UnitTests -f net10.0 --no-restore
     dotnet new xunit -n Infrastructure.UnitTests -o src/WorkerTemplate/Infrastructure.UnitTests -f net10.0 --no-restore
+
+    # Remove the default UnitTest1.cs file created by the xunit template.
+    Remove-Item "src/WorkerTemplate/Worker.UnitTests/UnitTest1.cs"
+    Remove-Item "src/WorkerTemplate/Application.UnitTests/UnitTest1.cs"
+    Remove-Item "src/WorkerTemplate/Domain.UnitTests/UnitTest1.cs"
+    Remove-Item "src/WorkerTemplate/Infrastructure.UnitTests/UnitTest1.cs"
 
     # Add the projects to the solution.
     dotnet sln src/WorkerTemplate/WorkerTemplate.slnx add src/WorkerTemplate/Worker/Worker.csproj --solution-folder src
