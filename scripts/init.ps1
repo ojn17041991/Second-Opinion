@@ -59,6 +59,25 @@ if (-not (Test-Path "src/Configuration")) {
     Write-Host "Configuration already exists."
 }
 
+# Create Secrets if it doesn't already exist.
+if (-not (Test-Path "src/Secrets")) {
+    dotnet new sln -n Secrets -o src/Secrets
+    dotnet new classlib -n Secrets -o src/Secrets/Secrets -f net10.0 --no-restore
+    dotnet new xunit -n Secrets.UnitTests -o src/Secrets/Secrets.UnitTests -f net10.0 --no-restore
+
+    # Remove the default files created by the class library and xunit templates.
+    Remove-Item "src/Secrets/Secrets/Class1.cs"
+    Remove-Item "src/Secrets/Secrets.UnitTests/UnitTest1.cs"
+
+    dotnet sln src/Secrets/Secrets.slnx add src/Secrets/Secrets/Secrets.csproj --solution-folder src
+    dotnet sln src/Secrets/Secrets.slnx add src/Secrets/Secrets.UnitTests/Secrets.UnitTests.csproj --solution-folder tests
+    dotnet add src/Secrets/Secrets.UnitTests/Secrets.UnitTests.csproj reference src/Secrets/Secrets/Secrets.csproj
+
+    dotnet restore src/Secrets/Secrets.slnx
+} else {
+    Write-Host "Secrets already exists."
+}
+
 # Create Gateway if it doesn't already exist.
 if (-not (Test-Path "src/Gateway")) {
     dotnet new sln -n Gateway -o src/Gateway
