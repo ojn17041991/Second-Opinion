@@ -6,9 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace Messaging.UnitTests.ServiceBus.Extensions;
+namespace Messaging.UnitTests.ServiceBus.Extensions.ServiceCollectionExtensions;
 
-public class ServiceCollectionExtensionsTests
+public class AddServiceBusMessagingTests
 {
     private readonly Mock<TokenCredential> _mockCredential = new();
 
