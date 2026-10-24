@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// The default configuration section name for Service Bus settings.
     /// </summary>
-    private const string SectionName = "ServiceBus";
+    private const string SectionName = "Messaging:ServiceBus";
 
     /// <summary>
     /// Adds Azure Service Bus messaging services to the dependency injection container by binding and validating

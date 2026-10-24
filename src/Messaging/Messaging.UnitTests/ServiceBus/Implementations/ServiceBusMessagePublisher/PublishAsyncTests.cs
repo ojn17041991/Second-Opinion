@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Moq;
 
-namespace Messaging.UnitTests.ServiceBusMessagePublisher;
+namespace Messaging.UnitTests.ServiceBus.Implementations.ServiceBusMessagePublisher;
 
 public class PublishAsyncTests
 {
@@ -19,7 +19,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithValidMessage_SendsMessageSuccessfully()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1, Name = "Test" };
 
@@ -43,7 +43,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithValidMessage_SetsContentTypeToApplicationJson()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1, Name = "Test" };
 
@@ -64,7 +64,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithSameTopic_ReusesCachedSender()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message1 = new { Id = 1 };
         var message2 = new { Id = 2 };
@@ -91,7 +91,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithDifferentTopics_CreatesMultipleSenders()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic1 = "topic-1";
         var topic2 = "topic-2";
         var message = new { Id = 1 };
@@ -115,7 +115,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithSimpleObject_SerializesMessageAsJson()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1, Name = "TestMessage" };
         ServiceBusMessage? capturedMessage = null;
@@ -143,7 +143,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithComplexObject_SerializesMessageAsJson()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new
         {
@@ -183,7 +183,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithCancellationToken_PropagatesCancellationToken()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1 };
         var cancellationToken = new CancellationToken();
@@ -205,7 +205,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WhenSenderThrowsException_PropagatesException()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1 };
 
@@ -233,7 +233,7 @@ public class PublishAsyncTests
         )
         .Throws<InvalidOperationException>();
 
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(mockFailingClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(mockFailingClient.Object);
         var topic = "test-topic";
         var message = new { Id = 1 };
 
@@ -247,7 +247,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithNullMessage_ThrowsArgumentNullException()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = "test-topic";
         object? message = null;
 
@@ -261,7 +261,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithEmptyTopic_ThrowsArgumentException()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         var topic = string.Empty;
         var message = new { Id = 1 };
 
@@ -275,7 +275,7 @@ public class PublishAsyncTests
     public async Task PublishAsync_WithNullTopic_ThrowsArgumentException()
     {
         // Arrange
-        var publisher = new global::Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
+        var publisher = new Messaging.ServiceBus.ServiceBusMessagePublisher(_mockClient.Object);
         string? topic = null;
         var message = new { Id = 1 };
 
