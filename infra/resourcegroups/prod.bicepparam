@@ -1,3 +1,2 @@
-using 'resource-groups.bicep'
-
+using 'resourcegroups.bicep'
 param environment = 'prod'
