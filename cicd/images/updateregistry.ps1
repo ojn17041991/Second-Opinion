@@ -1,12 +1,16 @@
 param(
-	[string]$servicesFile = "cicd/images/services.json",
+	[string]$servicesFile = "cicd/services.json",
 	[string]$registry,
 	[string]$tag = 'latest'
 )
 
-# Navigate to repo root
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
+# Find repository root using git
+$repoRoot = & git rev-parse --show-toplevel 2>$null
+if (-not $repoRoot -or $LASTEXITCODE -ne 0) {
+	Write-Error "Failed to find repository root using git. Ensure this script is run within a git repository."
+	exit 1
+}
+
 Push-Location $repoRoot
 
 if (-not $registry) {
@@ -15,13 +19,14 @@ if (-not $registry) {
 	exit 1
 }
 
-if (-not (Test-Path $servicesFile)) {
-	Write-Error "Services file not found at $servicesFile"
+$servicesFilePath = Join-Path -Path $repoRoot -ChildPath $servicesFile
+if (-not (Test-Path $servicesFilePath)) {
+	Write-Error "Services file not found at $servicesFilePath"
 	Pop-Location
 	exit 1
 }
 
-$services = Get-Content $servicesFile | ConvertFrom-Json
+$services = Get-Content $servicesFilePath | ConvertFrom-Json
 $apis = $services.apis
 $workers = $services.workers
 
@@ -31,10 +36,11 @@ $images = @()
 foreach ($service in $services) {
 	$imageName = $service.ToLower()
 	$image = "$registry/$imageName`:$tag"
-	$dockerfilePath = "src/$service"
+	$dockerfilePath = Join-Path -Path $repoRoot -ChildPath "src" -AdditionalChildPath $service
 
 	if (-not (Test-Path "$dockerfilePath/Dockerfile")) {
 		Write-Error "Dockerfile not found at $dockerfilePath/Dockerfile."
+		Pop-Location
 		exit 1
 	}
 
