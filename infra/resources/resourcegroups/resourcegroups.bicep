@@ -19,5 +19,4 @@ resource rgs 'Microsoft.Resources/resourceGroups@2024-03-01' = [for purpose in p
   location: deployment().location
 }]
 
-// OJN: IDs too?
 output rgNames array = [for i in range(0, length(purposes)): rgs[i].name]

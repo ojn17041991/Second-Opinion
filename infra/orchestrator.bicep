@@ -6,7 +6,6 @@ param adminPrincipalId string
 param serviceBusAdminAssignments array
 param serviceBusAppAssignments array
 
-var workerNames array = []
 var uniqueSuffix string = uniqueString(subscription().id, projectName, environment)
 
 module resourceGroups 'resources/resourcegroups/resourcegroups.bicep' = {
@@ -69,22 +68,6 @@ module appsInfra 'resources/apps/apps-infra.bicep' = {
   ]
 }
 
-module worker 'workers/worker.bicep' = [for workerName in workerNames: {
-  name: 'worker-${workerName}'
-  scope: resourceGroup('rg-${projectName}-apps-${environment}')
-  params: {
-    environment: environment
-    workerName: workerName
-    containerAppEnvironmentId: appsInfra.outputs.containerAppEnvironmentId
-    containerRegistryName: appsInfra.outputs.containerRegistryName
-    containerImage: '${appsInfra.outputs.containerRegistryLoginServer}/${workerName}:latest'
-  }
-  dependsOn: [
-    appsMonitor
-    appsInfra
-  ]
-}]
-
 module rbacShared 'rbac/rbac-shared.bicep' = {
   name: 'rbac'
   scope: resourceGroup('rg-${projectName}-shared-${environment}')
@@ -92,12 +75,13 @@ module rbacShared 'rbac/rbac-shared.bicep' = {
     keyVaultName: keyvault.outputs.keyVaultName
     serviceBusName: servicebus.outputs.serviceBusName
     adminPrincipalId: adminPrincipalId
-    workerPrincipalIds: [for i in range(0, length(workerNames)): worker[i].outputs.managedIdentityPrincipalId]
+    workerPrincipalIds: []
     serviceBusAdminAssignments: serviceBusAdminAssignments
     serviceBusAppAssignments: serviceBusAppAssignments
   }
   dependsOn: [
-    worker
+    appsMonitor
+    appsInfra
   ]
 }
 
@@ -106,10 +90,10 @@ module rbacApps 'rbac/rbac-apps.bicep' = {
   scope: resourceGroup('rg-${projectName}-apps-${environment}')
   params: {
     containerRegistryName: appsInfra.outputs.containerRegistryName
-    workerPrincipalIds: [for i in range(0, length(workerNames)): worker[i].outputs.managedIdentityPrincipalId]
+    workerPrincipalIds: []
   }
   dependsOn: [
-    worker
+    appsInfra
   ]
 }
 

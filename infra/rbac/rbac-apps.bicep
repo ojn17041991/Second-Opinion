@@ -11,12 +11,12 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existin
 
 resource workerAcrPullRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for principalId in workerPrincipalIds: {
-	  name: guid(acr.id, principalId, acrPullRoleDefinitionId)
-	  scope: acr
-	  properties: {
-	    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', acrPullRoleDefinitionId)
-	    principalId: principalId
-	    principalType: 'ServicePrincipal'
-	  }
+	name: guid(acr.id, principalId, acrPullRoleDefinitionId)
+	scope: acr
+	properties: {
+	  roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', acrPullRoleDefinitionId)
+	  principalId: principalId
+	  principalType: 'ServicePrincipal'
+	}
   }
 ]

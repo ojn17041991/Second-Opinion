@@ -4,7 +4,7 @@ param environment string
 param workerName string
 param containerAppEnvironmentId string
 param containerRegistryName string
-param containerImage string
+param containerImage string?
 
 var resourceGroupSplits array = split(resourceGroup().name, '-')
 var projectName string = resourceGroupSplits[1]
@@ -19,41 +19,41 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'ca-${projectName}-${workerName}-${environment}'
   location: resourceGroup().location
   identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${mi.id}': {}
-    }
+	type: 'UserAssigned'
+	userAssignedIdentities: {
+	  '${mi.id}': {}
+	}
   }
   properties: {
-    managedEnvironmentId: containerAppEnvironmentId
-    configuration: {
-      ingress: {
-        external: false
-        targetPort: 8080
-      }
-      registries: [
-        {
-          server: containerRegistryLoginServer
-          identity: mi.id
-        }
-      ]
-    }
-    template: {
-      containers: [
-        {
-          image: containerImage
-          name: '${projectName}-${workerName}-container'
-          resources: {
-            cpu: '0.25'
-            memory: '0.5Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 0
-        maxReplicas: 2
-      }
-    }
+	managedEnvironmentId: containerAppEnvironmentId
+	configuration: {
+	  ingress: {
+		external: false
+		targetPort: 8080
+	  }
+	  registries: [
+		{
+		  server: containerRegistryLoginServer
+		  identity: mi.id
+		}
+	  ]
+	}
+	template: {
+	  containers: containerImage != null ? [
+		{
+		  image: containerImage
+		  name: '${projectName}-${workerName}-container'
+		  resources: {
+			cpu: '0.25'
+			memory: '0.5Gi'
+		  }
+		}
+	  ] : []
+	  scale: {
+		minReplicas: 0
+		maxReplicas: 2
+	  }
+	}
   }
 }
 

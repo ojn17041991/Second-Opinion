@@ -18,5 +18,4 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-// OJN: IDs too?
 output keyVaultName string = kv.name
