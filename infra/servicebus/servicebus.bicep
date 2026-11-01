@@ -49,6 +49,19 @@ resource sbts 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' 
   }
 }]
 
+module servicebusrbac './servicebusrbac.bicep' = {
+  name: 'servicebusrbac'
+  params: {
+    serviceBusName: sb.name
+    adminAssignments: adminAssignments
+    appAssignments: appAssignments
+  }
+  dependsOn: [
+    sb
+    sbt
+  ]
+}
+
 output serviceBusName string = sb.name
 output serviceBusTopicNames array = [for i in range(0, length(topics)): sbt[i].name]
 output serviceBusSubscriptionNames array = [for i in range(0, length(subscriptions)): sbts[i].name]
