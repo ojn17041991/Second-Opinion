@@ -1,4 +1,4 @@
-﻿namespace Messaging.ServiceBus;
+﻿namespace Messaging.ServiceBus.Options;
 
 /// <summary>
 /// Represents configuration settings for connecting to an Azure Service Bus namespace.

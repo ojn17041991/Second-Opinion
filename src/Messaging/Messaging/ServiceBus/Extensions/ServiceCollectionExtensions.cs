@@ -2,11 +2,13 @@
 using Azure.Messaging.ServiceBus;
 using Configuration.Extensions;
 using Messaging.ServiceBus.Abstractions;
+using Messaging.ServiceBus.Implementations;
+using Messaging.ServiceBus.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Messaging.ServiceBus;
+namespace Messaging.ServiceBus.Extensions;
 
 /// <summary>
 /// Provides extension methods for registering Azure Service Bus messaging services.
@@ -23,7 +25,7 @@ public static class ServiceCollectionExtensions
     /// <param name="configuration">The application configuration containing the ServiceBusOptions section.</param>
     /// <param name="credential">The token credential used to authenticate the ServiceBusClient.</param>
     /// <returns>The same service collection so that additional registrations can be chained.</returns>
-    public static IServiceCollection AddServiceBusMessaging(
+    public static IServiceCollection AddMessaging(
         this IServiceCollection services,
         IConfiguration configuration,
         TokenCredential credential)

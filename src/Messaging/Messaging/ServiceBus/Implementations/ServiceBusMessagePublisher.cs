@@ -2,7 +2,7 @@
 using Messaging.ServiceBus.Abstractions;
 using System.Collections.Concurrent;
 
-namespace Messaging.ServiceBus;
+namespace Messaging.ServiceBus.Implementations;
 
 /// <inheritdoc/>
 public class ServiceBusMessagePublisher(ServiceBusClient client) : IMessagePublisher

@@ -1,4 +1,4 @@
-﻿namespace Messaging.ServiceBus;
+﻿namespace Messaging.ServiceBus.Abstractions;
 
 /// <summary>
 /// Defines a handler for processing messages of a specified type asynchronously.

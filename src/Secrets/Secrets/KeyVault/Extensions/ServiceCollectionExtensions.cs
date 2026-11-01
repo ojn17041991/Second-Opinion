@@ -8,7 +8,7 @@ namespace Secrets.KeyVault.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddKeyVaultSecrets(
+    public static IServiceCollection AddSecrets(
         this IServiceCollection services,
         IConfiguration configuration,
         TokenCredential credential)
