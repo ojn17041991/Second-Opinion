@@ -4,7 +4,6 @@ param(
 	[string]$tag = 'latest'
 )
 
-# Find repository root using git
 $repoRoot = & git rev-parse --show-toplevel 2>$null
 if (-not $repoRoot -or $LASTEXITCODE -ne 0) {
 	Write-Error "Failed to find repository root using git. Ensure this script is run within a git repository."
@@ -18,6 +17,8 @@ if (-not $registry) {
 	Pop-Location
 	exit 1
 }
+
+Write-Host "Note: if you are not logged in with both 'az login' and 'az acr login', this script may fail." -ForegroundColor Yellow
 
 $servicesFilePath = Join-Path -Path $repoRoot -ChildPath $servicesFile
 if (-not (Test-Path $servicesFilePath)) {
@@ -34,9 +35,9 @@ $services = @() + $apis + $workers
 $images = @()
 
 foreach ($service in $services) {
-	$imageName = $service.ToLower()
-	$image = "$registry/$imageName`:$tag"
-	$dockerfilePath = Join-Path -Path $repoRoot -ChildPath "src" -AdditionalChildPath $service
+	$serviceName = $service.ToLower()
+	$image = "${registry}/${serviceName}:$tag"
+	$dockerfilePath = Join-Path -Path (Join-Path -Path $repoRoot -ChildPath "src") -ChildPath $service
 
 	if (-not (Test-Path "$dockerfilePath/Dockerfile")) {
 		Write-Error "Dockerfile not found at $dockerfilePath/Dockerfile."
@@ -46,14 +47,14 @@ foreach ($service in $services) {
 
 	docker build -f "$dockerfilePath/Dockerfile" -t $image .
 	if ($LASTEXITCODE -ne 0) {
-		Write-Error "Docker build failed for $imageName."
+		Write-Error "Docker build failed for $serviceName."
 		Pop-Location
 		exit 1
 	}
 
 	docker push $image
 	if ($LASTEXITCODE -ne 0) {
-		Write-Error "Docker push failed for $imageName."
+		Write-Error "Docker push failed for $serviceName."
 		Pop-Location
 		exit 1
 	}

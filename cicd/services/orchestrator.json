@@ -1,0 +1,233 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.48.1.52935",
+      "templateHash": "5007869425689236834"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string"
+    },
+    "projectName": {
+      "type": "string"
+    },
+    "containerAppEnvironmentName": {
+      "type": "string"
+    },
+    "containerRegistryName": {
+      "type": "string"
+    },
+    "tag": {
+      "type": "string",
+      "defaultValue": "latest"
+    }
+  },
+  "variables": {
+    "$fxv#0": "{\r\n  \"apis\": [\"Gateway\"],\r\n  \"workers\": []\r\n}\r\n\r\n",
+    "services": "[json(variables('$fxv#0'))]",
+    "serviceDefinitions": "[concat(map(variables('services').apis, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', true()))), map(variables('services').workers, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', false()))))]"
+  },
+  "resources": {
+    "cae": {
+      "existing": true,
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-03-01",
+      "name": "[parameters('containerAppEnvironmentName')]"
+    },
+    "service": {
+      "copy": {
+        "name": "service",
+        "count": "[length(variables('serviceDefinitions'))]"
+      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('service-{0}', variables('serviceDefinitions')[copyIndex()].name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          },
+          "serviceName": {
+            "value": "[variables('serviceDefinitions')[copyIndex()].name]"
+          },
+          "externalIngress": {
+            "value": "[variables('serviceDefinitions')[copyIndex()].externalIngress]"
+          },
+          "containerAppEnvironmentId": {
+            "value": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvironmentName'))]"
+          },
+          "containerRegistryName": {
+            "value": "[parameters('containerRegistryName')]"
+          },
+          "tag": {
+            "value": "[parameters('tag')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.48.1.52935",
+              "templateHash": "772181050009854967"
+            }
+          },
+          "parameters": {
+            "environment": {
+              "type": "string"
+            },
+            "projectName": {
+              "type": "string"
+            },
+            "serviceName": {
+              "type": "string"
+            },
+            "externalIngress": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "containerAppEnvironmentId": {
+              "type": "string"
+            },
+            "containerRegistryName": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string",
+              "defaultValue": "latest"
+            }
+          },
+          "variables": {
+            "containerRegistryServer": "[format('{0}.azurecr.io', parameters('containerRegistryName'))]",
+            "serviceNameNormalized": "[toLower(parameters('serviceName'))]",
+            "containerImage": "[format('{0}/{1}:{2}', variables('containerRegistryServer'), variables('serviceNameNormalized'), parameters('tag'))]",
+            "acrPullRoleDefinitionId": "7f951dda-4ed3-4680-a7ca-43fe172d538d"
+          },
+          "resources": {
+            "acr": {
+              "existing": true,
+              "type": "Microsoft.ContainerRegistry/registries",
+              "apiVersion": "2023-11-01-preview",
+              "name": "[parameters('containerRegistryName')]"
+            },
+            "mi": {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]",
+              "location": "[resourceGroup().location]"
+            },
+            "role": {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
+              "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))), variables('acrPullRoleDefinitionId'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('acrPullRoleDefinitionId'))]",
+                "principalId": "[reference('mi').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "mi"
+              ]
+            },
+            "ca": {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2024-03-01",
+              "name": "[format('ca-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]",
+              "location": "[resourceGroup().location]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))))]": {}
+                }
+              },
+              "properties": {
+                "managedEnvironmentId": "[parameters('containerAppEnvironmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": "[parameters('externalIngress')]",
+                    "targetPort": 8080
+                  },
+                  "registries": [
+                    {
+                      "server": "[variables('containerRegistryServer')]",
+                      "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment')))]"
+                    }
+                  ]
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "image": "[variables('containerImage')]",
+                      "name": "[format('{0}-{1}-container', parameters('projectName'), variables('serviceNameNormalized'))]",
+                      "resources": {
+                        "cpu": 1,
+                        "memory": "2Gi"
+                      }
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": 0,
+                    "maxReplicas": 1
+                  }
+                }
+              },
+              "dependsOn": [
+                "mi",
+                "role"
+              ]
+            }
+          },
+          "outputs": {
+            "containerAppName": {
+              "type": "string",
+              "value": "[format('ca-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]"
+            },
+            "containerAppPrincipalId": {
+              "type": "string",
+              "value": "[reference('mi').principalId]"
+            },
+            "managedIdentityId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment')))]"
+            },
+            "managedIdentityPrincipalId": {
+              "type": "string",
+              "value": "[reference('mi').principalId]"
+            }
+          }
+        }
+      }
+    }
+  },
+  "outputs": {
+    "servicePrincipalIds": {
+      "type": "array",
+      "copy": {
+        "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
+        "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex()])).outputs.managedIdentityPrincipalId.value]"
+      }
+    },
+    "serviceContainerAppNames": {
+      "type": "array",
+      "copy": {
+        "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
+        "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex()])).outputs.containerAppName.value]"
+      }
+    }
+  }
+}
