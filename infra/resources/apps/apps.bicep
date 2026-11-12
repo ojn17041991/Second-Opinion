@@ -1,8 +1,17 @@
 targetScope = 'resourceGroup'
 
+@allowed(['dev', 'prod'])
+@description('Environment name, used as the name suffix.')
 param environment string
+
+@allowed(['so'])
+@description('Project name, shortened for resource naming.')
 param projectName string
+
+@description('Unique suffix for globally unique naming.')
 param uniqueSuffix string
+
+@description('Log Analytics Workspace resource ID for container logs.')
 param logAnalyticsWorkspaceId string
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {

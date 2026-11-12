@@ -1,8 +1,14 @@
 targetScope = 'resourceGroup'
 
+@allowed(['dev', 'prod'])
+@description('Environment name, used as the name suffix.')
 param environment string
+
+@allowed(['so'])
+@description('Project name, shortened for resource naming.')
 param projectName string
 
+@description('Log retention period in days.')
 var retentionInDays int = 30
 
 resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
