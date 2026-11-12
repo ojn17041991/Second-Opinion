@@ -27,7 +27,7 @@ param monitorResourceGroupName string
 param tag string = 'latest'
 
 @description('Service definitions loaded from services.json file.')
-var servicesJson = json(loadTextContent('../services.json'))
+var servicesJson = json(loadTextContent('../../services.json'))
 
 @description('Array of service definitions with API/worker classification and ingress settings.')
 var services array = concat(

@@ -6,4 +6,4 @@
 
 ###### Build and push
 
-`.\cicd\images\images.ps1 -Registry acrsodevpxnvm.azurecr.io -Tag latest`
+`.\pipelines\cicd\images\images.ps1 -Registry acrsodevpxnvm.azurecr.io -Tag latest`

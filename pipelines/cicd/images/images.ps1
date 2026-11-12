@@ -1,5 +1,5 @@
 param(
-	[string]$servicesFile = "cicd/services.json",
+	[string]$servicesFile = "pipelines/cicd/services.json",
 	[string]$registry,
 	[string]$tag = 'latest'
 )
