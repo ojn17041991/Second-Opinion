@@ -60,5 +60,3 @@ resource sbts 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' 
 }]
 
 output serviceBusName string = sb.name
-output serviceBusTopicNames array = [for i in range(0, length(topics)): sbt[i].name]
-output serviceBusSubscriptionNames array = [for i in range(0, length(subscriptions)): sbts[i].name]

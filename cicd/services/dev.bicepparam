@@ -1,0 +1,10 @@
+using 'orchestrator.bicep'
+
+param environment = 'dev'
+param projectName = 'so'
+param containerAppEnvironmentName = 'cae-so-dev'
+param containerRegistryName = 'acrsodevpxnvm'
+param serviceBusName = 'sb-so-dev-pxnvmzgmbcxqc'
+param logAnalyticsWorkspaceName = 'law-so-dev'
+param monitorResourceGroupName = 'rg-so-monitor-dev'
+param tag = 'latest'

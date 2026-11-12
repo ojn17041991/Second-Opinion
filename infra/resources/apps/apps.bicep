@@ -42,6 +42,4 @@ resource cae 'Microsoft.App/managedEnvironments@2024-03-01' = {
 }
 
 output containerRegistryName string = acr.name
-output containerAppEnvironmentName string = cae.name
 output containerAppEnvironmentId string = cae.id
-output containerRegistryLoginServer string = acr.properties.loginServer

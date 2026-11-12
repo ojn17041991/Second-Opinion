@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.48.1.52935",
-      "templateHash": "5007869425689236834"
+      "templateHash": "17605936599766585796"
     }
   },
   "parameters": {
@@ -20,6 +20,18 @@
       "type": "string"
     },
     "containerRegistryName": {
+      "type": "string"
+    },
+    "serviceBusName": {
+      "type": "string"
+    },
+    "sharedResourceGroupName": {
+      "type": "string"
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string"
+    },
+    "monitorResourceGroupName": {
       "type": "string"
     },
     "tag": {
@@ -38,6 +50,13 @@
       "type": "Microsoft.App/managedEnvironments",
       "apiVersion": "2024-03-01",
       "name": "[parameters('containerAppEnvironmentName')]"
+    },
+    "law": {
+      "existing": true,
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "resourceGroup": "[parameters('monitorResourceGroupName')]",
+      "name": "[parameters('logAnalyticsWorkspaceName')]"
     },
     "service": {
       "copy": {
@@ -71,6 +90,9 @@
           "containerRegistryName": {
             "value": "[parameters('containerRegistryName')]"
           },
+          "logAnalyticsWorkspaceId": {
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('monitorResourceGroupName')), 'Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+          },
           "tag": {
             "value": "[parameters('tag')]"
           }
@@ -83,7 +105,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "772181050009854967"
+              "templateHash": "1464597644911576613"
             }
           },
           "parameters": {
@@ -104,6 +126,9 @@
               "type": "string"
             },
             "containerRegistryName": {
+              "type": "string"
+            },
+            "logAnalyticsWorkspaceId": {
               "type": "string"
             },
             "tag": {
@@ -144,6 +169,17 @@
                 "mi"
               ]
             },
+            "ai": {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[format('ai-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]",
+              "location": "[resourceGroup().location]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[parameters('logAnalyticsWorkspaceId')]"
+              }
+            },
             "ca": {
               "type": "Microsoft.App/containerApps",
               "apiVersion": "2024-03-01",
@@ -167,6 +203,12 @@
                       "server": "[variables('containerRegistryServer')]",
                       "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment')))]"
                     }
+                  ],
+                  "secrets": [
+                    {
+                      "name": "appinsights-connection-string",
+                      "value": "[reference('ai').ConnectionString]"
+                    }
                   ]
                 },
                 "template": {
@@ -174,6 +216,16 @@
                     {
                       "image": "[variables('containerImage')]",
                       "name": "[format('{0}-{1}-container', parameters('projectName'), variables('serviceNameNormalized'))]",
+                      "env": [
+                        {
+                          "name": "AZURE_CLIENT_ID",
+                          "value": "[reference('mi').clientId]"
+                        },
+                        {
+                          "name": "ApplicationInsights__ConnectionString",
+                          "secretRef": "appinsights-connection-string"
+                        }
+                      ],
                       "resources": {
                         "cpu": 1,
                         "memory": "2Gi"
@@ -187,6 +239,7 @@
                 }
               },
               "dependsOn": [
+                "ai",
                 "mi",
                 "role"
               ]
@@ -212,6 +265,74 @@
           }
         }
       }
+    },
+    "rbac": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "services-rbac",
+      "resourceGroup": "[parameters('sharedResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "serviceBusName": {
+            "value": "[parameters('serviceBusName')]"
+          },
+          "servicePrincipalIds": {
+            "copy": [
+              {
+                "name": "value",
+                "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
+                "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex('value')])).outputs.managedIdentityPrincipalId.value]"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.48.1.52935",
+              "templateHash": "18356226779673040104"
+            }
+          },
+          "parameters": {
+            "serviceBusName": {
+              "type": "string"
+            },
+            "servicePrincipalIds": {
+              "type": "array"
+            }
+          },
+          "variables": {
+            "serviceBusDataSenderRoleId": "69a216fc-b8fb-44d8-bc22-1f3c2cd27a39"
+          },
+          "resources": [
+            {
+              "copy": {
+                "name": "serviceBusSenderAssignments",
+                "count": "[length(parameters('servicePrincipalIds'))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]",
+              "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), parameters('servicePrincipalIds')[copyIndex()], variables('serviceBusDataSenderRoleId'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('serviceBusDataSenderRoleId'))]",
+                "principalId": "[parameters('servicePrincipalIds')[copyIndex()]]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "service"
+      ]
     }
   },
   "outputs": {
