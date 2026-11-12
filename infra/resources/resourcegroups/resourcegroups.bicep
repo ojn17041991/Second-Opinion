@@ -8,6 +8,7 @@ param environment string
 @description('Project name, shortened for resource naming.')
 param projectName string
 
+@description('Predefined resource group purposes.')
 var purposes array = [
   'shared'
   'apps'

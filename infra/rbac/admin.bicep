@@ -1,12 +1,18 @@
 targetScope = 'resourceGroup'
 
+@description('Name of the Key Vault for admin access.')
 param keyVaultName string
-param serviceBusName string
-param adminPrincipalId string
-param workerPrincipalIds array
-param serviceBusAdminAssignments array
-param serviceBusAppAssignments array
 
+@description('Name of the Service Bus namespace.')
+param serviceBusName string
+
+@description('Principal ID (user or service principal) for admin access.')
+param adminPrincipalId string
+
+@description('Array of role assignments for admin access to shared resources.')
+param serviceBusAdminAssignments array
+
+@description('Role definition ID for Key Vault Secrets Officer.')
 var secretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -38,22 +44,3 @@ resource adminServiceBusRoleAssignments 'Microsoft.Authorization/roleAssignments
 	  }
   }
 ]
-
-var appServiceBusRoleAssignmentsFlattened = flatten(
-  map(serviceBusAppAssignments, a => 
-    map(workerPrincipalIds, principalId => {
-      roleDefinitionId: a.roleDefinitionId
-      principalId: principalId
-    })
-  )
-)
-
-resource appServiceBusRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for item in appServiceBusRoleAssignmentsFlattened: {
-  name: guid(sb.id, item.principalId, item.roleDefinitionId)
-  scope: sb
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', item.roleDefinitionId)
-    principalId: item.principalId
-    principalType: 'ServicePrincipal'
-  }
-}]

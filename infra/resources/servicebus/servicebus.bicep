@@ -1,9 +1,17 @@
 targetScope = 'resourceGroup'
 
+@allowed(['dev', 'prod'])
+@description('Environment name, used as the name suffix.')
 param environment string
+
+@allowed(['so'])
+@description('Project name, shortened for resource naming.')
 param projectName string
+
+@description('Unique suffix for globally unique naming.')
 param uniqueSuffix string
 
+@description('Topic definitions with their subscriptions.')
 var topics array = [
   {
     name: 'prompt'
@@ -12,6 +20,8 @@ var topics array = [
     ]
   }
 ]
+
+@description('Flattened array of topic-subscription pairs for iteration.')
 var subscriptions = flatten(map(range(0, length(topics)), i =>
   map(topics[i].subscriptions, s => {
     topicIndex: i
