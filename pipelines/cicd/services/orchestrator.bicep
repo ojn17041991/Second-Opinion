@@ -27,22 +27,13 @@ param monitorResourceGroupName string
 param tag string = 'latest'
 
 @description('Service definitions loaded from services.json file.')
-var servicesJson = json(loadTextContent('../../services.json'))
+var servicesJson = json(loadTextContent('../services.json'))
 
 @description('Array of service definitions with API/worker classification and ingress settings.')
 var services array = concat(
   map(servicesJson.apis, name => { name: name, externalIngress: true }),
   map(servicesJson.workers, name => { name: name, externalIngress: false })
 )
-
-@description('Array of indices for iterating over deployed services.')
-var serviceIndices array = range(0, length(services))
-
-@description('Principal IDs of managed identities from deployed services.')
-var servicePrincipalIds array = [for i in serviceIndices: services[i].outputs.managedIdentityPrincipalId]
-
-@description('Names of deployed container apps.')
-var serviceContainerAppNames array = [for i in serviceIndices: services[i].outputs.containerAppName]
 
 resource cae 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: containerAppEnvironmentName
@@ -68,5 +59,5 @@ module service './service/service.bicep' = [for service in services: {
   }
 }]
 
-output servicePrincipalIds array = servicePrincipalIds
-output serviceContainerAppNames array = serviceContainerAppNames
+output servicePrincipalIds array = [for (svc, i) in services: service[i].outputs.managedIdentityPrincipalId]
+output serviceContainerAppNames array = [for (svc, i) in services: service[i].outputs.containerAppName]

@@ -98,4 +98,4 @@ output serviceBusName string = servicebus.outputs.serviceBusName
 output logAnalyticsWorkspaceName string = monitor.outputs.logAnalyticsWorkspaceName
 output logAnalyticsWorkspaceId string = monitor.outputs.logAnalyticsWorkspaceId
 output containerRegistryName string = apps.outputs.containerRegistryName
-output containerAppEnvironmentName string = apps.outputs.containerAppEnvironmentName
+output containerAppEnvironmentId string = apps.outputs.containerAppEnvironmentId
