@@ -20,11 +20,14 @@ param containerAppEnvironmentId string
 @description('Name of the Container Registry (without .azurecr.io suffix).')
 param containerRegistryName string
 
-@description('Resource ID of the Log Analytics Workspace.')
-param logAnalyticsWorkspaceId string
+@description('Connection string of the shared Application Insights component.')
+param applicationInsightsConnectionString string
 
 @description('Name of the Service Bus namespace.')
 param serviceBusName string
+
+@description('Name of the resource group containing the Service Bus namespace.')
+param sharedResourceGroupName string
 
 @description('Container image tag to deploy.')
 param tag string = 'latest'
@@ -41,15 +44,8 @@ var containerImage string = '${containerRegistryServer}/${serviceNameNormalized}
 @description('Role definition ID for ACR Pull.')
 var acrPullRoleDefinitionId = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
-@description('Role definition ID for Service Bus Data Sender.')
-var serviceBusDataSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
-
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
   name: containerRegistryName
-}
-
-resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' existing = {
-  name: serviceBusName
 }
 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -67,23 +63,12 @@ resource acrRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource sbRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(sb.id, mi.id, serviceBusDataSenderRoleId)
-  scope: sb
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', serviceBusDataSenderRoleId)
+module sbRole './shared.bicep' = {
+  name: 'servicebus-role-${serviceNameNormalized}'
+  scope: resourceGroup(sharedResourceGroupName)
+  params: {
+    serviceBusName: serviceBusName
     principalId: mi.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource ai 'Microsoft.Insights/components@2020-02-02' = {
-  name: 'ai-${projectName}-${serviceNameNormalized}-${environment}'
-  location: resourceGroup().location
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    WorkspaceResourceId: logAnalyticsWorkspaceId
   }
 }
 
@@ -116,7 +101,7 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         {
           name: 'appinsights-connection-string'
-          value: ai.properties.ConnectionString
+          value: applicationInsightsConnectionString
         }
       ]
     }

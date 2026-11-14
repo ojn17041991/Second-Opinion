@@ -6,43 +6,71 @@
     "_generator": {
       "name": "bicep",
       "version": "0.48.1.52935",
-      "templateHash": "17605936599766585796"
+      "templateHash": "6973506053259582579"
     }
   },
   "parameters": {
     "environment": {
-      "type": "string"
+      "type": "string",
+      "allowedValues": [
+        "dev",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name, used as the name suffix."
+      }
     },
     "projectName": {
-      "type": "string"
+      "type": "string",
+      "allowedValues": [
+        "so"
+      ],
+      "metadata": {
+        "description": "Project name, shortened for resource naming."
+      }
     },
     "containerAppEnvironmentName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Container App Environment."
+      }
     },
     "containerRegistryName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Container Registry (without .azurecr.io suffix)."
+      }
     },
     "serviceBusName": {
-      "type": "string"
-    },
-    "sharedResourceGroupName": {
-      "type": "string"
-    },
-    "logAnalyticsWorkspaceName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Service Bus namespace."
+      }
     },
     "monitorResourceGroupName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of the monitor resource group."
+      }
+    },
+    "applicationInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the shared Application Insights component."
+      }
     },
     "tag": {
       "type": "string",
-      "defaultValue": "latest"
+      "defaultValue": "latest",
+      "metadata": {
+        "description": "Container image tag to deploy."
+      }
     }
   },
   "variables": {
     "$fxv#0": "{\r\n  \"apis\": [\"Gateway\"],\r\n  \"workers\": []\r\n}\r\n\r\n",
-    "services": "[json(variables('$fxv#0'))]",
-    "serviceDefinitions": "[concat(map(variables('services').apis, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', true()))), map(variables('services').workers, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', false()))))]"
+    "servicesJson": "[json(variables('$fxv#0'))]",
+    "services": "[concat(map(variables('servicesJson').apis, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', true()))), map(variables('servicesJson').workers, lambda('name', createObject('name', lambdaVariables('name'), 'externalIngress', false()))))]"
   },
   "resources": {
     "cae": {
@@ -51,21 +79,21 @@
       "apiVersion": "2024-03-01",
       "name": "[parameters('containerAppEnvironmentName')]"
     },
-    "law": {
+    "ai": {
       "existing": true,
-      "type": "Microsoft.OperationalInsights/workspaces",
-      "apiVersion": "2023-09-01",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
       "resourceGroup": "[parameters('monitorResourceGroupName')]",
-      "name": "[parameters('logAnalyticsWorkspaceName')]"
+      "name": "[parameters('applicationInsightsName')]"
     },
     "service": {
       "copy": {
         "name": "service",
-        "count": "[length(variables('serviceDefinitions'))]"
+        "count": "[length(variables('services'))]"
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "[format('service-{0}', variables('serviceDefinitions')[copyIndex()].name)]",
+      "name": "[format('service-{0}', variables('services')[copyIndex()].name)]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -79,10 +107,10 @@
             "value": "[parameters('projectName')]"
           },
           "serviceName": {
-            "value": "[variables('serviceDefinitions')[copyIndex()].name]"
+            "value": "[variables('services')[copyIndex()].name]"
           },
           "externalIngress": {
-            "value": "[variables('serviceDefinitions')[copyIndex()].externalIngress]"
+            "value": "[variables('services')[copyIndex()].externalIngress]"
           },
           "containerAppEnvironmentId": {
             "value": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvironmentName'))]"
@@ -90,8 +118,11 @@
           "containerRegistryName": {
             "value": "[parameters('containerRegistryName')]"
           },
-          "logAnalyticsWorkspaceId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('monitorResourceGroupName')), 'Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+          "applicationInsightsConnectionString": {
+            "value": "[reference('ai').ConnectionString]"
+          },
+          "serviceBusName": {
+            "value": "[parameters('serviceBusName')]"
           },
           "tag": {
             "value": "[parameters('tag')]"
@@ -105,42 +136,80 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "1464597644911576613"
+              "templateHash": "13747121603961673927"
             }
           },
           "parameters": {
             "environment": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "dev",
+                "prod"
+              ],
+              "metadata": {
+                "description": "Environment name, used as the name suffix."
+              }
             },
             "projectName": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "so"
+              ],
+              "metadata": {
+                "description": "Project name, shortened for resource naming."
+              }
             },
             "serviceName": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Name of the service to deploy."
+              }
             },
             "externalIngress": {
               "type": "bool",
-              "defaultValue": false
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether the container app should have external ingress."
+              }
             },
             "containerAppEnvironmentId": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the Container App Environment."
+              }
             },
             "containerRegistryName": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container Registry (without .azurecr.io suffix)."
+              }
             },
-            "logAnalyticsWorkspaceId": {
-              "type": "string"
+            "applicationInsightsConnectionString": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection string of the shared Application Insights component."
+              }
+            },
+            "serviceBusName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Service Bus namespace."
+              }
             },
             "tag": {
               "type": "string",
-              "defaultValue": "latest"
+              "defaultValue": "latest",
+              "metadata": {
+                "description": "Container image tag to deploy."
+              }
             }
           },
           "variables": {
             "containerRegistryServer": "[format('{0}.azurecr.io', parameters('containerRegistryName'))]",
             "serviceNameNormalized": "[toLower(parameters('serviceName'))]",
             "containerImage": "[format('{0}/{1}:{2}', variables('containerRegistryServer'), variables('serviceNameNormalized'), parameters('tag'))]",
-            "acrPullRoleDefinitionId": "7f951dda-4ed3-4680-a7ca-43fe172d538d"
+            "acrPullRoleDefinitionId": "7f951dda-4ed3-4680-a7ca-43fe172d538d",
+            "serviceBusDataSenderRoleId": "69a216fc-b8fb-44d8-bc22-1f3c2cd27a39"
           },
           "resources": {
             "acr": {
@@ -149,13 +218,19 @@
               "apiVersion": "2023-11-01-preview",
               "name": "[parameters('containerRegistryName')]"
             },
+            "sb": {
+              "existing": true,
+              "type": "Microsoft.ServiceBus/namespaces",
+              "apiVersion": "2024-01-01",
+              "name": "[parameters('serviceBusName')]"
+            },
             "mi": {
               "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
               "apiVersion": "2023-01-31",
               "name": "[format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]",
               "location": "[resourceGroup().location]"
             },
-            "role": {
+            "acrRole": {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
@@ -169,16 +244,19 @@
                 "mi"
               ]
             },
-            "ai": {
-              "type": "Microsoft.Insights/components",
-              "apiVersion": "2020-02-02",
-              "name": "[format('ai-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]",
-              "location": "[resourceGroup().location]",
-              "kind": "web",
+            "sbRole": {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]",
+              "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))), variables('serviceBusDataSenderRoleId'))]",
               "properties": {
-                "Application_Type": "web",
-                "WorkspaceResourceId": "[parameters('logAnalyticsWorkspaceId')]"
-              }
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('serviceBusDataSenderRoleId'))]",
+                "principalId": "[reference('mi').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "mi"
+              ]
             },
             "ca": {
               "type": "Microsoft.App/containerApps",
@@ -207,7 +285,7 @@
                   "secrets": [
                     {
                       "name": "appinsights-connection-string",
-                      "value": "[reference('ai').ConnectionString]"
+                      "value": "[parameters('applicationInsightsConnectionString')]"
                     }
                   ]
                 },
@@ -239,9 +317,9 @@
                 }
               },
               "dependsOn": [
-                "ai",
+                "acrRole",
                 "mi",
-                "role"
+                "sbRole"
               ]
             }
           },
@@ -249,10 +327,6 @@
             "containerAppName": {
               "type": "string",
               "value": "[format('ca-{0}-{1}-{2}', parameters('projectName'), variables('serviceNameNormalized'), parameters('environment'))]"
-            },
-            "containerAppPrincipalId": {
-              "type": "string",
-              "value": "[reference('mi').principalId]"
             },
             "managedIdentityId": {
               "type": "string",
@@ -264,74 +338,9 @@
             }
           }
         }
-      }
-    },
-    "rbac": {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
-      "name": "services-rbac",
-      "resourceGroup": "[parameters('sharedResourceGroupName')]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "serviceBusName": {
-            "value": "[parameters('serviceBusName')]"
-          },
-          "servicePrincipalIds": {
-            "copy": [
-              {
-                "name": "value",
-                "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
-                "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex('value')])).outputs.managedIdentityPrincipalId.value]"
-              }
-            ]
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.48.1.52935",
-              "templateHash": "18356226779673040104"
-            }
-          },
-          "parameters": {
-            "serviceBusName": {
-              "type": "string"
-            },
-            "servicePrincipalIds": {
-              "type": "array"
-            }
-          },
-          "variables": {
-            "serviceBusDataSenderRoleId": "69a216fc-b8fb-44d8-bc22-1f3c2cd27a39"
-          },
-          "resources": [
-            {
-              "copy": {
-                "name": "serviceBusSenderAssignments",
-                "count": "[length(parameters('servicePrincipalIds'))]"
-              },
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]",
-              "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), parameters('servicePrincipalIds')[copyIndex()], variables('serviceBusDataSenderRoleId'))]",
-              "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('serviceBusDataSenderRoleId'))]",
-                "principalId": "[parameters('servicePrincipalIds')[copyIndex()]]",
-                "principalType": "ServicePrincipal"
-              }
-            }
-          ]
-        }
       },
       "dependsOn": [
-        "service"
+        "ai"
       ]
     }
   },
@@ -339,15 +348,15 @@
     "servicePrincipalIds": {
       "type": "array",
       "copy": {
-        "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
-        "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex()])).outputs.managedIdentityPrincipalId.value]"
+        "count": "[length(variables('services'))]",
+        "input": "[reference(format('service[{0}]', copyIndex())).outputs.managedIdentityPrincipalId.value]"
       }
     },
     "serviceContainerAppNames": {
       "type": "array",
       "copy": {
-        "count": "[length(range(0, length(variables('serviceDefinitions'))))]",
-        "input": "[reference(format('service[{0}]', range(0, length(variables('serviceDefinitions')))[copyIndex()])).outputs.containerAppName.value]"
+        "count": "[length(variables('services'))]",
+        "input": "[reference(format('service[{0}]', copyIndex())).outputs.containerAppName.value]"
       }
     }
   }

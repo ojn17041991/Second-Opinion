@@ -97,5 +97,6 @@ output keyVaultName string = keyvault.outputs.keyVaultName
 output serviceBusName string = servicebus.outputs.serviceBusName
 output logAnalyticsWorkspaceName string = monitor.outputs.logAnalyticsWorkspaceName
 output logAnalyticsWorkspaceId string = monitor.outputs.logAnalyticsWorkspaceId
+output applicationInsightsName string = monitor.outputs.applicationInsightsName
 output containerRegistryName string = apps.outputs.containerRegistryName
 output containerAppEnvironmentId string = apps.outputs.containerAppEnvironmentId

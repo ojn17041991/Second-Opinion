@@ -10,9 +10,10 @@
     <PackageReference Include="Azure.Identity" Version="*" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>

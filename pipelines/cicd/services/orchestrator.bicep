@@ -17,11 +17,14 @@ param containerRegistryName string
 @description('Name of the Service Bus namespace.')
 param serviceBusName string
 
-@description('Name of the Log Analytics Workspace.')
-param logAnalyticsWorkspaceName string
+@description('Name of the resource group containing the Service Bus namespace.')
+param sharedResourceGroupName string
 
 @description('Name of the monitor resource group.')
 param monitorResourceGroupName string
+
+@description('Name of the shared Application Insights component.')
+param applicationInsightsName string
 
 @description('Container image tag to deploy.')
 param tag string = 'latest'
@@ -39,12 +42,12 @@ resource cae 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: containerAppEnvironmentName
 }
 
-resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
-  name: logAnalyticsWorkspaceName
+resource ai 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: applicationInsightsName
   scope: resourceGroup(monitorResourceGroupName)
 }
 
-module service './service/service.bicep' = [for service in services: {
+module service './service/apps.bicep' = [for service in services: {
   name: 'service-${service.name}'
   params: {
 		environment: environment
@@ -53,8 +56,9 @@ module service './service/service.bicep' = [for service in services: {
 		externalIngress: service.externalIngress
 		containerAppEnvironmentId: cae.id
 		containerRegistryName: containerRegistryName
-		logAnalyticsWorkspaceId: law.id
+		applicationInsightsConnectionString: ai.properties.ConnectionString
 		serviceBusName: serviceBusName
+		sharedResourceGroupName: sharedResourceGroupName
 		tag: tag
   }
 }]

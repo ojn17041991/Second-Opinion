@@ -6,28 +6,43 @@
     "_generator": {
       "name": "bicep",
       "version": "0.48.1.52935",
-      "templateHash": "13182706189801252449"
+      "templateHash": "6708845940029225862"
     }
   },
   "parameters": {
     "environment": {
-      "type": "string"
+      "type": "string",
+      "allowedValues": [
+        "dev",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name, used as the name suffix."
+      }
     },
     "projectName": {
-      "type": "string"
+      "type": "string",
+      "allowedValues": [
+        "so"
+      ],
+      "metadata": {
+        "description": "Project name, shortened for resource naming."
+      }
     },
     "adminPrincipalId": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID (user or service principal) for admin access to shared resources."
+      }
     },
     "serviceBusAdminAssignments": {
-      "type": "array"
-    },
-    "serviceBusAppAssignments": {
-      "type": "array"
+      "type": "array",
+      "metadata": {
+        "description": "Array of role assignments for admin access to shared resources. Each item should contain principalId and roleDefinitionId."
+      }
     }
   },
   "variables": {
-    "workerNames": [],
     "uniqueSuffix": "[uniqueString(subscription().id, parameters('projectName'), parameters('environment'))]"
   },
   "resources": {
@@ -140,22 +155,35 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "1821734790928392850"
+              "templateHash": "2989057108057975203"
             }
           },
           "parameters": {
             "environment": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "dev",
+                "prod"
+              ],
+              "metadata": {
+                "description": "Environment name, used as the name suffix."
+              }
             },
             "projectName": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "so"
+              ],
+              "metadata": {
+                "description": "Project name, shortened for resource naming."
+              }
             },
             "uniqueSuffix": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Unique suffix for globally unique naming."
+              }
             }
-          },
-          "variables": {
-            "secretsOfficerRoleId": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7"
           },
           "resources": [
             {
@@ -216,18 +244,34 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "2872226391730663933"
+              "templateHash": "13301004140912713662"
             }
           },
           "parameters": {
             "environment": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "dev",
+                "prod"
+              ],
+              "metadata": {
+                "description": "Environment name, used as the name suffix."
+              }
             },
             "projectName": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "so"
+              ],
+              "metadata": {
+                "description": "Project name, shortened for resource naming."
+              }
             },
             "uniqueSuffix": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Unique suffix for globally unique naming."
+              }
             }
           },
           "variables": {
@@ -291,20 +335,6 @@
             "serviceBusName": {
               "type": "string",
               "value": "[format('sb-{0}-{1}-{2}', parameters('projectName'), parameters('environment'), parameters('uniqueSuffix'))]"
-            },
-            "serviceBusTopicNames": {
-              "type": "array",
-              "copy": {
-                "count": "[length(range(0, length(variables('topics'))))]",
-                "input": "[format('sbt-{0}-{1}-{2}', parameters('projectName'), variables('topics')[range(0, length(variables('topics')))[copyIndex()]].name, parameters('environment'))]"
-              }
-            },
-            "serviceBusSubscriptionNames": {
-              "type": "array",
-              "copy": {
-                "count": "[length(range(0, length(variables('subscriptions'))))]",
-                "input": "[format('sbts-{0}-{1}-{2}-{3}', parameters('projectName'), variables('subscriptions')[range(0, length(variables('subscriptions')))[copyIndex()]].topic, variables('subscriptions')[range(0, length(variables('subscriptions')))[copyIndex()]].subscription, parameters('environment'))]"
-              }
             }
           }
         }
@@ -313,10 +343,10 @@
         "resourceGroups"
       ]
     },
-    "appsMonitor": {
+    "monitor": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "appsMonitor",
+      "name": "monitor",
       "resourceGroup": "[format('rg-{0}-monitor-{1}', parameters('projectName'), parameters('environment'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -339,15 +369,28 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "2174394164879773898"
+              "templateHash": "3749317575292199446"
             }
           },
           "parameters": {
             "environment": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "dev",
+                "prod"
+              ],
+              "metadata": {
+                "description": "Environment name, used as the name suffix."
+              }
             },
             "projectName": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "so"
+              ],
+              "metadata": {
+                "description": "Project name, shortened for resource naming."
+              }
             }
           },
           "variables": {
@@ -385,10 +428,10 @@
         "resourceGroups"
       ]
     },
-    "appsInfra": {
+    "apps": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "appsInfra",
+      "name": "apps",
       "resourceGroup": "[format('rg-{0}-apps-{1}', parameters('projectName'), parameters('environment'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -406,7 +449,7 @@
             "value": "[variables('uniqueSuffix')]"
           },
           "logAnalyticsWorkspaceId": {
-            "value": "[reference('appsMonitor').outputs.logAnalyticsWorkspaceId.value]"
+            "value": "[reference('monitor').outputs.logAnalyticsWorkspaceId.value]"
           }
         },
         "template": {
@@ -416,21 +459,40 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "752864385333984315"
+              "templateHash": "2828145367462136472"
             }
           },
           "parameters": {
             "environment": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "dev",
+                "prod"
+              ],
+              "metadata": {
+                "description": "Environment name, used as the name suffix."
+              }
             },
             "projectName": {
-              "type": "string"
+              "type": "string",
+              "allowedValues": [
+                "so"
+              ],
+              "metadata": {
+                "description": "Project name, shortened for resource naming."
+              }
             },
             "uniqueSuffix": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Unique suffix for globally unique naming."
+              }
             },
             "logAnalyticsWorkspaceId": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Log Analytics Workspace resource ID for container logs."
+              }
             }
           },
           "resources": [
@@ -469,173 +531,22 @@
               "type": "string",
               "value": "[format('acr{0}{1}{2}', parameters('projectName'), parameters('environment'), substring(parameters('uniqueSuffix'), 0, 5))]"
             },
-            "containerAppEnvironmentName": {
-              "type": "string",
-              "value": "[format('cae-{0}-{1}', parameters('projectName'), parameters('environment'))]"
-            },
             "containerAppEnvironmentId": {
               "type": "string",
               "value": "[resourceId('Microsoft.App/managedEnvironments', format('cae-{0}-{1}', parameters('projectName'), parameters('environment')))]"
-            },
-            "containerRegistryLoginServer": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', format('acr{0}{1}{2}', parameters('projectName'), parameters('environment'), substring(parameters('uniqueSuffix'), 0, 5))), '2023-11-01-preview').loginServer]"
             }
           }
         }
       },
       "dependsOn": [
-        "appsMonitor",
+        "monitor",
         "resourceGroups"
       ]
     },
-    "worker": {
-      "copy": {
-        "name": "worker",
-        "count": "[length(variables('workerNames'))]"
-      },
+    "admin": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "[format('worker-{0}', variables('workerNames')[copyIndex()])]",
-      "resourceGroup": "[format('rg-{0}-apps-{1}', parameters('projectName'), parameters('environment'))]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "environment": {
-            "value": "[parameters('environment')]"
-          },
-          "workerName": {
-            "value": "[variables('workerNames')[copyIndex()]]"
-          },
-          "containerAppEnvironmentId": {
-            "value": "[reference('appsInfra').outputs.containerAppEnvironmentId.value]"
-          },
-          "containerRegistryName": {
-            "value": "[reference('appsInfra').outputs.containerRegistryName.value]"
-          },
-          "containerImage": {
-            "value": "[format('{0}/{1}:latest', reference('appsInfra').outputs.containerRegistryLoginServer.value, variables('workerNames')[copyIndex()])]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "languageVersion": "2.0",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.48.1.52935",
-              "templateHash": "2443562794771693891"
-            }
-          },
-          "parameters": {
-            "environment": {
-              "type": "string"
-            },
-            "workerName": {
-              "type": "string"
-            },
-            "containerAppEnvironmentId": {
-              "type": "string"
-            },
-            "containerRegistryName": {
-              "type": "string"
-            },
-            "containerImage": {
-              "type": "string"
-            }
-          },
-          "variables": {
-            "resourceGroupSplits": "[split(resourceGroup().name, '-')]",
-            "projectName": "[variables('resourceGroupSplits')[1]]",
-            "containerRegistryLoginServer": "[format('{0}.azurecr.io', parameters('containerRegistryName'))]"
-          },
-          "resources": {
-            "mi": {
-              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-              "apiVersion": "2023-01-31",
-              "name": "[format('mi-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment'))]",
-              "location": "[resourceGroup().location]"
-            },
-            "ca": {
-              "type": "Microsoft.App/containerApps",
-              "apiVersion": "2024-03-01",
-              "name": "[format('ca-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment'))]",
-              "location": "[resourceGroup().location]",
-              "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment'))))]": {}
-                }
-              },
-              "properties": {
-                "managedEnvironmentId": "[parameters('containerAppEnvironmentId')]",
-                "configuration": {
-                  "ingress": {
-                    "external": false,
-                    "targetPort": 8080
-                  },
-                  "registries": [
-                    {
-                      "server": "[variables('containerRegistryLoginServer')]",
-                      "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment')))]"
-                    }
-                  ]
-                },
-                "template": {
-                  "containers": [
-                    {
-                      "image": "[parameters('containerImage')]",
-                      "name": "[format('{0}-{1}-container', variables('projectName'), parameters('workerName'))]",
-                      "resources": {
-                        "cpu": "0.25",
-                        "memory": "0.5Gi"
-                      }
-                    }
-                  ],
-                  "scale": {
-                    "minReplicas": 0,
-                    "maxReplicas": 2
-                  }
-                }
-              },
-              "dependsOn": [
-                "mi"
-              ]
-            }
-          },
-          "outputs": {
-            "containerAppName": {
-              "type": "string",
-              "value": "[format('ca-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment'))]"
-            },
-            "containerAppPrincipalId": {
-              "type": "string",
-              "value": "[reference('mi').principalId]"
-            },
-            "managedIdentityId": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('mi-{0}-{1}-{2}', variables('projectName'), parameters('workerName'), parameters('environment')))]"
-            },
-            "managedIdentityPrincipalId": {
-              "type": "string",
-              "value": "[reference('mi').principalId]"
-            }
-          }
-        }
-      },
-      "dependsOn": [
-        "appsInfra",
-        "appsMonitor"
-      ]
-    },
-    "rbacShared": {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
-      "name": "rbac",
+      "name": "admin",
       "resourceGroup": "[format('rg-{0}-shared-{1}', parameters('projectName'), parameters('environment'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -652,20 +563,8 @@
           "adminPrincipalId": {
             "value": "[parameters('adminPrincipalId')]"
           },
-          "workerPrincipalIds": {
-            "copy": [
-              {
-                "name": "value",
-                "count": "[length(range(0, length(variables('workerNames'))))]",
-                "input": "[reference(format('worker[{0}]', range(0, length(variables('workerNames')))[copyIndex('value')])).outputs.managedIdentityPrincipalId.value]"
-              }
-            ]
-          },
           "serviceBusAdminAssignments": {
             "value": "[parameters('serviceBusAdminAssignments')]"
-          },
-          "serviceBusAppAssignments": {
-            "value": "[parameters('serviceBusAppAssignments')]"
           }
         },
         "template": {
@@ -675,32 +574,37 @@
             "_generator": {
               "name": "bicep",
               "version": "0.48.1.52935",
-              "templateHash": "9012136580448862292"
+              "templateHash": "17660304737252284969"
             }
           },
           "parameters": {
             "keyVaultName": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Key Vault for admin access."
+              }
             },
             "serviceBusName": {
-              "type": "string"
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Service Bus namespace."
+              }
             },
             "adminPrincipalId": {
-              "type": "string"
-            },
-            "workerPrincipalIds": {
-              "type": "array"
+              "type": "string",
+              "metadata": {
+                "description": "Principal ID (user or service principal) for admin access."
+              }
             },
             "serviceBusAdminAssignments": {
-              "type": "array"
-            },
-            "serviceBusAppAssignments": {
-              "type": "array"
+              "type": "array",
+              "metadata": {
+                "description": "Array of role assignments for admin access to shared resources."
+              }
             }
           },
           "variables": {
-            "secretsOfficerRoleId": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
-            "appServiceBusRoleAssignmentsFlattened": "[flatten(map(parameters('serviceBusAppAssignments'), lambda('a', map(parameters('workerPrincipalIds'), lambda('principalId', createObject('roleDefinitionId', lambdaVariables('a').roleDefinitionId, 'principalId', lambdaVariables('principalId')))))))]"
+            "secretsOfficerRoleId": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7"
           },
           "resources": [
             {
@@ -728,98 +632,15 @@
                 "principalId": "[parameters('serviceBusAdminAssignments')[copyIndex()].principalId]",
                 "principalType": "User"
               }
-            },
-            {
-              "copy": {
-                "name": "appServiceBusRoleAssignments",
-                "count": "[length(variables('appServiceBusRoleAssignmentsFlattened'))]"
-              },
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]",
-              "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), variables('appServiceBusRoleAssignmentsFlattened')[copyIndex()].principalId, variables('appServiceBusRoleAssignmentsFlattened')[copyIndex()].roleDefinitionId)]",
-              "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('appServiceBusRoleAssignmentsFlattened')[copyIndex()].roleDefinitionId)]",
-                "principalId": "[variables('appServiceBusRoleAssignmentsFlattened')[copyIndex()].principalId]",
-                "principalType": "ServicePrincipal"
-              }
             }
           ]
         }
       },
       "dependsOn": [
+        "apps",
         "keyvault",
-        "servicebus",
-        "worker"
-      ]
-    },
-    "rbacApps": {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
-      "name": "rbac",
-      "resourceGroup": "[format('rg-{0}-apps-{1}', parameters('projectName'), parameters('environment'))]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "containerRegistryName": {
-            "value": "[reference('appsInfra').outputs.containerRegistryName.value]"
-          },
-          "workerPrincipalIds": {
-            "copy": [
-              {
-                "name": "value",
-                "count": "[length(range(0, length(variables('workerNames'))))]",
-                "input": "[reference(format('worker[{0}]', range(0, length(variables('workerNames')))[copyIndex('value')])).outputs.managedIdentityPrincipalId.value]"
-              }
-            ]
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.48.1.52935",
-              "templateHash": "10489291665354591733"
-            }
-          },
-          "parameters": {
-            "containerRegistryName": {
-              "type": "string"
-            },
-            "workerPrincipalIds": {
-              "type": "array"
-            }
-          },
-          "variables": {
-            "acrPullRoleDefinitionId": "7f951dda-4ed3-4680-a7ca-6e2d8995e53d"
-          },
-          "resources": [
-            {
-              "copy": {
-                "name": "workerAcrPullRoleAssignments",
-                "count": "[length(parameters('workerPrincipalIds'))]"
-              },
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]",
-              "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), parameters('workerPrincipalIds')[copyIndex()], variables('acrPullRoleDefinitionId'))]",
-              "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('acrPullRoleDefinitionId'))]",
-                "principalId": "[parameters('workerPrincipalIds')[copyIndex()]]",
-                "principalType": "ServicePrincipal"
-              }
-            }
-          ]
-        }
-      },
-      "dependsOn": [
-        "appsInfra",
-        "worker"
+        "monitor",
+        "servicebus"
       ]
     }
   },
@@ -838,19 +659,19 @@
     },
     "logAnalyticsWorkspaceName": {
       "type": "string",
-      "value": "[reference('appsMonitor').outputs.logAnalyticsWorkspaceName.value]"
+      "value": "[reference('monitor').outputs.logAnalyticsWorkspaceName.value]"
     },
     "logAnalyticsWorkspaceId": {
       "type": "string",
-      "value": "[reference('appsMonitor').outputs.logAnalyticsWorkspaceId.value]"
+      "value": "[reference('monitor').outputs.logAnalyticsWorkspaceId.value]"
     },
     "containerRegistryName": {
       "type": "string",
-      "value": "[reference('appsInfra').outputs.containerRegistryName.value]"
+      "value": "[reference('apps').outputs.containerRegistryName.value]"
     },
-    "containerAppEnvironmentName": {
+    "containerAppEnvironmentId": {
       "type": "string",
-      "value": "[reference('appsInfra').outputs.containerAppEnvironmentName.value]"
+      "value": "[reference('apps').outputs.containerAppEnvironmentId.value]"
     }
   }
 }

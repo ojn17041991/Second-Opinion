@@ -24,5 +24,19 @@ resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+resource ai 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'ai-${projectName}-${environment}'
+  location: resourceGroup().location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: law.id
+  }
+  dependsOn: [
+    law
+  ]
+}
+
 output logAnalyticsWorkspaceName string = law.name
 output logAnalyticsWorkspaceId string = law.id
+output applicationInsightsName string = ai.name

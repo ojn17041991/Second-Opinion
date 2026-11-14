@@ -1,11 +1,12 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Messaging.ServiceBus.Abstractions;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace Messaging.ServiceBus.Implementations;
 
 /// <inheritdoc/>
-public class ServiceBusMessagePublisher(ServiceBusClient client) : IMessagePublisher
+public class ServiceBusMessagePublisher(ServiceBusClient client, ILogger<ServiceBusMessagePublisher> logger) : IMessagePublisher
 {
     private readonly ConcurrentDictionary<string, ServiceBusSender> _senders = new();
 
@@ -14,11 +15,13 @@ public class ServiceBusMessagePublisher(ServiceBusClient client) : IMessagePubli
     {
         if (string.IsNullOrWhiteSpace(topic))
         {
+            logger.LogError("Topic cannot be null or empty.");
             throw new ArgumentException("Topic cannot be null or empty.", nameof(topic));
         }
 
         if (message == null)
         {
+            logger.LogError("Message cannot be null.");
             throw new ArgumentNullException(nameof(message));
         }
 
@@ -28,6 +31,8 @@ public class ServiceBusMessagePublisher(ServiceBusClient client) : IMessagePubli
             ContentType = "application/json"
         };
 
+        logger.LogInformation("Publishing message to topic '{Topic}'.", topic);
         await sender.SendMessageAsync(body, cancellationToken);
+        logger.LogInformation("Message successfully published to topic '{Topic}'.", topic);
     }
 }

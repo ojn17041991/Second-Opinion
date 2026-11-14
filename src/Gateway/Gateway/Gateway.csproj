@@ -7,7 +7,9 @@
 
 	<ItemGroup>
 		<!-- Built-in .NET 10 OpenAPI engine (handles generation natively) -->
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.*" />
+		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Scalar.AspNetCore" Version="2.18.3" />
 
 		<!-- Pure UI package (just renders the page, no broken DI generator) -->

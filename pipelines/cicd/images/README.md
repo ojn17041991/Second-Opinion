@@ -1,6 +1,6 @@
 ###### Login
 
-`az login`
+`az login --usedevicecode`
 
 `az acr login --name acrsodevpxnvm`
 
