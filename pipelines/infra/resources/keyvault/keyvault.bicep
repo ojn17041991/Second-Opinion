@@ -1,5 +1,7 @@
 targetScope = 'resourceGroup'
 
+import { getKeyVaultName } from '../../../helpers/naming.bicep'
+
 @allowed(['dev', 'prod'])
 @description('Environment name, used as the name suffix.')
 param environment string
@@ -8,11 +10,8 @@ param environment string
 @description('Project name, shortened for resource naming.')
 param projectName string
 
-@description('Unique suffix for globally unique naming.')
-param uniqueSuffix string
-
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
-  name: 'kv-${projectName}-${environment}-${uniqueSuffix}'
+  name: getKeyVaultName(subscription().id, projectName, environment)
   location: resourceGroup().location
   properties: {
     sku: { family: 'A', name: 'standard' }
@@ -22,5 +21,3 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
     softDeleteRetentionInDays: 7
   }
 }
-
-output keyVaultName string = kv.name

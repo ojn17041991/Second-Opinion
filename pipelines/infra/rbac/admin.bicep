@@ -1,10 +1,14 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the Key Vault for admin access.')
-param keyVaultName string
+import { getKeyVaultName, getServiceBusName } from '../../helpers/naming.bicep'
 
-@description('Name of the Service Bus namespace.')
-param serviceBusName string
+@allowed(['dev', 'prod'])
+@description('Environment name, used as the name suffix.')
+param environment string
+
+@allowed(['so'])
+@description('Project name, shortened for resource naming.')
+param projectName string
 
 @description('Principal ID (user or service principal) for admin access.')
 param adminPrincipalId string
@@ -16,7 +20,7 @@ param serviceBusAdminAssignments array
 var secretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: keyVaultName
+  name: getKeyVaultName(subscription().id, projectName, environment)
 }
 
 resource role 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -30,7 +34,7 @@ resource role 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' existing = {
-  name: serviceBusName
+  name: getServiceBusName(subscription().id, projectName, environment)
 }
 
 resource adminServiceBusRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [

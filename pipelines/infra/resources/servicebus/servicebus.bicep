@@ -1,5 +1,7 @@
 targetScope = 'resourceGroup'
 
+import { getServiceBusName, getServiceBusTopicName, getServiceBusSubscriptionName } from '../../../helpers/naming.bicep'
+
 @allowed(['dev', 'prod'])
 @description('Environment name, used as the name suffix.')
 param environment string
@@ -7,9 +9,6 @@ param environment string
 @allowed(['so'])
 @description('Project name, shortened for resource naming.')
 param projectName string
-
-@description('Unique suffix for globally unique naming.')
-param uniqueSuffix string
 
 @description('Topic definitions with their subscriptions.')
 var topics array = [
@@ -21,6 +20,9 @@ var topics array = [
   }
 ]
 
+@description('Generated topic names, in the same order as the topic definitions.')
+var topicNames = map(topics, topic => getServiceBusTopicName(projectName, topic.name, environment))
+
 @description('Flattened array of topic-subscription pairs for iteration.')
 var subscriptions = flatten(map(range(0, length(topics)), i =>
   map(topics[i].subscriptions, s => {
@@ -31,7 +33,7 @@ var subscriptions = flatten(map(range(0, length(topics)), i =>
 ))
 
 resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
-  name: 'sb-${projectName}-${environment}-${uniqueSuffix}'
+  name: getServiceBusName(subscription().id, projectName, environment)
   location: resourceGroup().location
   sku: {
     name: 'Standard'
@@ -44,19 +46,17 @@ resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
   }
 }
 
-resource sbt 'Microsoft.ServiceBus/namespaces/topics@2024-01-01' = [for t in topics: {
+resource sbt 'Microsoft.ServiceBus/namespaces/topics@2024-01-01' = [for (t, i) in topics: {
   parent: sb
-  name: 'sbt-${projectName}-${t.name}-${environment}'
+  name: topicNames[i]
 }]
 
 resource sbts 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' = [for s in subscriptions: {
   parent: sbt[s.topicIndex]
-  name: 'sbts-${projectName}-${s.topic}-${s.subscription}-${environment}'
+  name: getServiceBusSubscriptionName(projectName, s.topic, s.subscription, environment)
   properties: {
     maxDeliveryCount: 10
     deadLetteringOnMessageExpiration: true
     lockDuration: 'PT5M'
   }
 }]
-
-output serviceBusName string = sb.name
