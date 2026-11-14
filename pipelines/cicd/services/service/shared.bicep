@@ -1,7 +1,14 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the Service Bus namespace.')
-param serviceBusName string
+import { getServiceBusName } from '../../../helpers/naming.bicep'
+
+@allowed(['dev', 'prod'])
+@description('Environment name, used as the name suffix.')
+param environment string
+
+@allowed(['so'])
+@description('Project name, shortened for resource naming.')
+param projectName string
 
 @description('Principal ID of the service managed identity.')
 param principalId string
@@ -10,7 +17,7 @@ param principalId string
 var serviceBusDataSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 
 resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' existing = {
-  name: serviceBusName
+  name: getServiceBusName(subscription().id, projectName, environment)
 }
 
 resource sbRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {

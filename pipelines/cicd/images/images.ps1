@@ -1,8 +1,10 @@
 param(
 	[string]$servicesFile = "pipelines/cicd/services.json",
-	[string]$registry,
 	[string]$tag = 'latest'
 )
+
+# OJN: Replace the hard-coded registry with a shared naming or configuration mechanism later.
+$registry = 'acrsodevpxnvm.azurecr.io'
 
 $repoRoot = & git rev-parse --show-toplevel 2>$null
 if (-not $repoRoot -or $LASTEXITCODE -ne 0) {
@@ -11,12 +13,6 @@ if (-not $repoRoot -or $LASTEXITCODE -ne 0) {
 }
 
 Push-Location $repoRoot
-
-if (-not $registry) {
-	Write-Error "Container registry is required."
-	Pop-Location
-	exit 1
-}
 
 Write-Host "Note: if you are not logged in with both 'az login' and 'az acr login', this script may fail." -ForegroundColor Yellow
 

@@ -44,3 +44,15 @@ func getContainerRegistryName(subscriptionId string, projectName string, environ
 @export()
 func getContainerAppEnvironmentName(projectName string, environment string) string =>
   'cae-${projectName}-${environment}'
+
+@export()
+func getManagedIdentityName(projectName string, serviceName string, environment string) string =>
+  'mi-${projectName}-${toLower(serviceName)}-${environment}'
+
+@export()
+func getContainerAppName(projectName string, serviceName string, environment string) string =>
+  'ca-${projectName}-${toLower(serviceName)}-${environment}'
+
+@export()
+func getContainerName(projectName string, serviceName string) string =>
+  '${projectName}-${toLower(serviceName)}-container'

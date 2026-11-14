@@ -1,5 +1,7 @@
 targetScope = 'resourceGroup'
 
+import { getContainerRegistryName, getManagedIdentityName, getContainerAppName, getContainerName, getSharedName } from '../../../helpers/naming.bicep'
+
 @allowed(['dev', 'prod'])
 @description('Environment name, used as the name suffix.')
 param environment string
@@ -17,23 +19,15 @@ param externalIngress bool = false
 @description('Resource ID of the Container App Environment.')
 param containerAppEnvironmentId string
 
-@description('Name of the Container Registry (without .azurecr.io suffix).')
-param containerRegistryName string
-
+@secure()
 @description('Connection string of the shared Application Insights component.')
 param applicationInsightsConnectionString string
-
-@description('Name of the Service Bus namespace.')
-param serviceBusName string
-
-@description('Name of the resource group containing the Service Bus namespace.')
-param sharedResourceGroupName string
 
 @description('Container image tag to deploy.')
 param tag string = 'latest'
 
 @description('Container registry server FQDN.')
-var containerRegistryServer string = '${containerRegistryName}.azurecr.io'
+var containerRegistryServer string = '${getContainerRegistryName(subscription().id, projectName, environment)}.azurecr.io'
 
 @description('Service name normalized to lowercase.')
 var serviceNameNormalized = toLower(serviceName)
@@ -45,11 +39,11 @@ var containerImage string = '${containerRegistryServer}/${serviceNameNormalized}
 var acrPullRoleDefinitionId = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
-  name: containerRegistryName
+  name: getContainerRegistryName(subscription().id, projectName, environment)
 }
 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'mi-${projectName}-${serviceNameNormalized}-${environment}'
+  name: getManagedIdentityName(projectName, serviceName, environment)
   location: resourceGroup().location
 }
 
@@ -63,21 +57,22 @@ resource acrRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-module sbRole './shared.bicep' = {
+module sharedRoles './shared.bicep' = {
   name: 'servicebus-role-${serviceNameNormalized}'
-  scope: resourceGroup(sharedResourceGroupName)
+  scope: resourceGroup(getSharedName(projectName, environment))
   params: {
-    serviceBusName: serviceBusName
+    environment: environment
+    projectName: projectName
     principalId: mi.properties.principalId
   }
 }
 
 resource ca 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'ca-${projectName}-${serviceNameNormalized}-${environment}'
+  name: getContainerAppName(projectName, serviceName, environment)
   location: resourceGroup().location
   dependsOn: [
     acrRole
-    sbRole
+    sharedRoles
   ]
   identity: {
     type: 'UserAssigned'
@@ -109,7 +104,7 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           image: containerImage
-          name: '${projectName}-${serviceNameNormalized}-container'
+          name: getContainerName(projectName, serviceName)
           env: [
             {
               name: 'AZURE_CLIENT_ID'
@@ -134,6 +129,5 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
-output containerAppName string = ca.name
 output managedIdentityId string = mi.id
 output managedIdentityPrincipalId string = mi.properties.principalId
