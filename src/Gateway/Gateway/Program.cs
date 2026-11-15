@@ -40,7 +40,7 @@ builder.Services
 
 builder.Services.AddScoped<IAiRequestPublisher, AiRequestPublisher>();
 builder.Services.AddMessaging(builder.Configuration, credential);
-builder.Services.AddServiceBus(builder.Configuration);
+builder.Services.AddGatewayServiceBus(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddSecrets(builder.Configuration, credential);
 
