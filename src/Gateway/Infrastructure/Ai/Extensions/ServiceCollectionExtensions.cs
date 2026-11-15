@@ -7,7 +7,7 @@ namespace Infrastructure.Ai.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddServiceBus(
+    public static IServiceCollection AddGatewayServiceBus(
         this IServiceCollection services,
         IConfiguration configuration)
     {
