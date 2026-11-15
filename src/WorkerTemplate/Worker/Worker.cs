@@ -1,16 +1,14 @@
+using Messaging.ServiceBus.Abstractions;
+
 namespace Worker;
 
-public class Worker(ILogger<Worker> logger) : BackgroundService
+public class Worker(IMessageConsumer messageConsumer, IConfiguration configuration) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-            await Task.Delay(1000, stoppingToken);
-        }
+        await messageConsumer.RunAsync(
+            configuration["Worker:ServiceBus:Topic"]!,
+            configuration["Worker:ServiceBus:Subscription"]!,
+            stoppingToken);
     }
 }
