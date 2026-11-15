@@ -17,10 +17,10 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers Azure Service Bus messaging services, binds and validates ServiceBusOptions from configuration, and
-    /// adds the message publisher dependencies.
+    /// adds the message publisher and consumer dependencies.
     /// </summary>
     /// <remarks>Validates the ServiceBusOptions configuration section and its properties before use, and
-    /// enables options validation at startup.</remarks>
+    /// enables options validation at startup. The consumer must be started by the application.</remarks>
     /// <param name="services">The service collection to add messaging services to.</param>
     /// <param name="configuration">The application configuration containing the ServiceBusOptions section.</param>
     /// <param name="credential">The token credential used to authenticate the ServiceBusClient.</param>
@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IMessagePublisher, ServiceBusMessagePublisher>();
+        services.AddSingleton<IMessageConsumer, ServiceBusMessageConsumer>();
 
         return services;
     }

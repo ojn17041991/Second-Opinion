@@ -15,13 +15,19 @@ public class ServiceBusMessagePublisher(ServiceBusClient client, ILogger<Service
     {
         if (string.IsNullOrWhiteSpace(topic))
         {
-            logger.LogError("Topic cannot be null or empty.");
+            logger.LogError(
+                "Topic cannot be null or empty. Topic: {Topic}, message type: {MessageType}.",
+                topic,
+                typeof(T).FullName);
             throw new ArgumentException("Topic cannot be null or empty.", nameof(topic));
         }
 
         if (message == null)
         {
-            logger.LogError("Message cannot be null.");
+            logger.LogError(
+                "Message cannot be null. Topic: {Topic}, message type: {MessageType}.",
+                topic,
+                typeof(T).FullName);
             throw new ArgumentNullException(nameof(message));
         }
 
