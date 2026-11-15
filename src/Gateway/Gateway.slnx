@@ -1,13 +1,19 @@
 <Solution>
   <Folder Name="/shared/">
+    <Project Path="../Configuration/Configuration/Configuration.csproj" />
     <Project Path="../Contracts/Contracts/Contracts.csproj" />
     <Project Path="../Messaging/Messaging/Messaging.csproj" />
+    <Project Path="../Secrets/Secrets/Secrets.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="Application/Application.csproj" />
+    <Project Path="Domain/Domain.csproj" />
     <Project Path="Gateway/Gateway.csproj" />
     <Project Path="Infrastructure/Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="Domain.UnitTests/Domain.UnitTests.csproj" />
     <Project Path="Gateway.UnitTests/Gateway.UnitTests.csproj" />
     <Project Path="Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
   </Folder>

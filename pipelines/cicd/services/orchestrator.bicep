@@ -14,13 +14,7 @@ param projectName string
 param tag string = 'latest'
 
 @description('Service definitions loaded from services.json file.')
-var servicesJson = json(loadTextContent('../services.json'))
-
-@description('Array of service definitions with API/worker classification and ingress settings.')
-var services array = concat(
-  map(servicesJson.apis, name => { name: name, externalIngress: true }),
-  map(servicesJson.workers, name => { name: name, externalIngress: false })
-)
+var services = json(loadTextContent('../services.json')).services
 
 resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: getContainerAppEnvironmentName(projectName, environment)
@@ -37,6 +31,7 @@ module service './service/apps.bicep' = [for service in services: {
 		environment: environment
 		projectName: projectName
 		serviceName: service.name
+		serviceType: service.type
 		externalIngress: service.externalIngress
 		containerAppEnvironmentId: containerAppEnvironment.id
 		applicationInsightsConnectionString: applicationInsights.properties.ConnectionString

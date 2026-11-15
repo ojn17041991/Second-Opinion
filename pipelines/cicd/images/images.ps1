@@ -23,17 +23,13 @@ if (-not (Test-Path $servicesFilePath)) {
 	exit 1
 }
 
-$services = Get-Content $servicesFilePath | ConvertFrom-Json
-$apis = $services.apis
-$workers = $services.workers
-
-$services = @() + $apis + $workers
+$services = (Get-Content $servicesFilePath -Raw | ConvertFrom-Json -ErrorAction Stop).services
 $images = @()
 
 foreach ($service in $services) {
-	$serviceName = $service.ToLower()
+	$serviceName = $service.name.ToLower()
 	$image = "${registry}/${serviceName}:$tag"
-	$dockerfilePath = Join-Path -Path (Join-Path -Path $repoRoot -ChildPath "src") -ChildPath $service
+	$dockerfilePath = Join-Path -Path (Join-Path -Path $repoRoot -ChildPath "src") -ChildPath $service.name
 
 	if (-not (Test-Path "$dockerfilePath/Dockerfile")) {
 		Write-Error "Dockerfile not found at $dockerfilePath/Dockerfile."

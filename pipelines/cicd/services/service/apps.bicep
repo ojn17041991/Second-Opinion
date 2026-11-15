@@ -13,6 +13,10 @@ param projectName string
 @description('Name of the service to deploy.')
 param serviceName string
 
+@allowed(['api', 'worker'])
+@description('Type of service being deployed.')
+param serviceType string
+
 @description('Whether the container app should have external ingress.')
 param externalIngress bool = false
 
@@ -64,6 +68,7 @@ module sharedRoles './shared.bicep' = {
     environment: environment
     projectName: projectName
     principalId: managedIdentity.properties.principalId
+    serviceType: serviceType
   }
 }
 
@@ -107,7 +112,7 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
           name: getContainerName(projectName, serviceName)
           env: [
             {
-              name: 'AZURE_CLIENT_ID'
+              name: 'Azure__ManagedIdentity__ClientId'
               value: managedIdentity.properties.clientId
             }
             {
