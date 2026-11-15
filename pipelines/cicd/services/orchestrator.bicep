@@ -22,24 +22,24 @@ var services array = concat(
   map(servicesJson.workers, name => { name: name, externalIngress: false })
 )
 
-resource cae 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
+resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: getContainerAppEnvironmentName(projectName, environment)
 }
 
-resource ai 'Microsoft.Insights/components@2020-02-02' existing = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: getApplicationInsightsName(projectName, environment)
   scope: resourceGroup(getMonitorName(projectName, environment))
 }
 
 module service './service/apps.bicep' = [for service in services: {
-  name: 'service-${service.name}'
+  name: 'cicd-service-${service.name}'
   params: {
 		environment: environment
 		projectName: projectName
 		serviceName: service.name
 		externalIngress: service.externalIngress
-		containerAppEnvironmentId: cae.id
-		applicationInsightsConnectionString: ai.properties.ConnectionString
+		containerAppEnvironmentId: containerAppEnvironment.id
+		applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
 		tag: tag
   }
 }]

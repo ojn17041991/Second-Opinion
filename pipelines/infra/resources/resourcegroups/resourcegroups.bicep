@@ -17,7 +17,7 @@ var resourceGroupNames array = [
   getMonitorName(projectName, environment)
 ]
 
-resource rgs 'Microsoft.Resources/resourceGroups@2024-03-01' = [for resourceGroupName in resourceGroupNames: {
+resource resourceGroups 'Microsoft.Resources/resourceGroups@2024-03-01' = [for resourceGroupName in resourceGroupNames: {
   name: resourceGroupName
   location: deployment().location
 }]

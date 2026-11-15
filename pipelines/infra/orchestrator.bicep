@@ -17,7 +17,7 @@ param adminPrincipalId string
 param serviceBusAdminAssignments array
 
 module resourceGroups 'resources/resourcegroups/resourcegroups.bicep' = {
-  name: 'resourceGroups'
+  name: 'infra-resourceGroups'
   params: {
     environment: environment
     projectName: projectName
@@ -25,7 +25,7 @@ module resourceGroups 'resources/resourcegroups/resourcegroups.bicep' = {
 }
 
 module keyvault 'resources/keyvault/keyvault.bicep' = {
-  name: 'keyvault'
+  name: 'infra-keyvault'
   scope: resourceGroup(getSharedName(projectName, environment))
   params: {
     environment: environment
@@ -37,7 +37,7 @@ module keyvault 'resources/keyvault/keyvault.bicep' = {
 }
 
 module servicebus 'resources/servicebus/servicebus.bicep' = {
-  name: 'servicebus'
+  name: 'infra-servicebus'
   scope: resourceGroup(getSharedName(projectName, environment))
   params: {
     environment: environment
@@ -49,7 +49,7 @@ module servicebus 'resources/servicebus/servicebus.bicep' = {
 }
 
 module monitor 'resources/apps/monitor.bicep' = {
-  name: 'monitor'
+  name: 'infra-monitor'
   scope: resourceGroup(getMonitorName(projectName, environment))
   params: {
     environment: environment
@@ -61,7 +61,7 @@ module monitor 'resources/apps/monitor.bicep' = {
 }
 
 module apps 'resources/apps/apps.bicep' = {
-  name: 'apps'
+  name: 'infra-apps'
   scope: resourceGroup(getAppsName(projectName, environment))
   params: {
     environment: environment
@@ -74,7 +74,7 @@ module apps 'resources/apps/apps.bicep' = {
 }
 
 module admin 'rbac/admin.bicep' = {
-  name: 'admin'
+  name: 'infra-admin'
   scope: resourceGroup(getSharedName(projectName, environment))
   params: {
     environment: environment

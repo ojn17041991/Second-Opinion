@@ -38,32 +38,32 @@ var containerImage string = '${containerRegistryServer}/${serviceNameNormalized}
 @description('Role definition ID for ACR Pull.')
 var acrPullRoleDefinitionId = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
-resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
   name: getContainerRegistryName(subscription().id, projectName, environment)
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: getManagedIdentityName(projectName, serviceName, environment)
   location: resourceGroup().location
 }
 
-resource acrRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acr.id, mi.id, acrPullRoleDefinitionId)
-  scope: acr
+resource containerRegistryAcrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, managedIdentity.id, acrPullRoleDefinitionId)
+  scope: containerRegistry
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', acrPullRoleDefinitionId)
-    principalId: mi.properties.principalId
+    principalId: managedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
 module sharedRoles './shared.bicep' = {
-  name: 'servicebus-role-${serviceNameNormalized}'
+  name: 'cicd-shared-${serviceName}'
   scope: resourceGroup(getSharedName(projectName, environment))
   params: {
     environment: environment
     projectName: projectName
-    principalId: mi.properties.principalId
+    principalId: managedIdentity.properties.principalId
   }
 }
 
@@ -71,13 +71,13 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
   name: getContainerAppName(projectName, serviceName, environment)
   location: resourceGroup().location
   dependsOn: [
-    acrRole
+    containerRegistryAcrPullRoleAssignment
     sharedRoles
   ]
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${mi.id}': {}
+      '${managedIdentity.id}': {}
     }
   }
   properties: {
@@ -90,7 +90,7 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
       registries: [
         {
           server: containerRegistryServer
-          identity: mi.id
+          identity: managedIdentity.id
         }
       ]
       secrets: [
@@ -108,7 +108,7 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
           env: [
             {
               name: 'AZURE_CLIENT_ID'
-              value: mi.properties.clientId
+              value: managedIdentity.properties.clientId
             }
             {
               name: 'ApplicationInsights__ConnectionString'
@@ -129,5 +129,5 @@ resource ca 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
-output managedIdentityId string = mi.id
-output managedIdentityPrincipalId string = mi.properties.principalId
+output managedIdentityId string = managedIdentity.id
+output managedIdentityPrincipalId string = managedIdentity.properties.principalId

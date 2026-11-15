@@ -13,7 +13,7 @@ param projectName string
 @description('Log retention period in days.')
 var retentionInDays int = 30
 
-resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: getLogAnalyticsWorkspaceName(projectName, environment)
   location: resourceGroup().location
   properties: {
@@ -26,14 +26,14 @@ resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
-resource ai 'Microsoft.Insights/components@2020-02-02' = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: getApplicationInsightsName(projectName, environment)
   location: resourceGroup().location
   kind: 'web'
   properties: {
     Application_Type: 'web'
-    WorkspaceResourceId: law.id
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 
-output logAnalyticsWorkspaceId string = law.id
+output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id

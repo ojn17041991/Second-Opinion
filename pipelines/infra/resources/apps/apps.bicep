@@ -13,7 +13,7 @@ param projectName string
 @description('Log Analytics Workspace resource ID for container logs.')
 param logAnalyticsWorkspaceId string
 
-resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: getContainerRegistryName(subscription().id, projectName, environment)
   location: resourceGroup().location
   sku: {
@@ -26,7 +26,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   }
 }
 
-resource cae 'Microsoft.App/managedEnvironments@2024-03-01' = {
+resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: getContainerAppEnvironmentName(projectName, environment)
   location: resourceGroup().location
   properties: {
@@ -40,4 +40,4 @@ resource cae 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-output containerAppEnvironmentId string = cae.id
+output containerAppEnvironmentId string = containerAppEnvironment.id

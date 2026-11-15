@@ -10,7 +10,7 @@ param environment string
 @description('Project name, shortened for resource naming.')
 param projectName string
 
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: getKeyVaultName(subscription().id, projectName, environment)
   location: resourceGroup().location
   properties: {

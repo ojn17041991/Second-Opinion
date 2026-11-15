@@ -32,7 +32,7 @@ var subscriptions = flatten(map(range(0, length(topics)), i =>
   })
 ))
 
-resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
   name: getServiceBusName(subscription().id, projectName, environment)
   location: resourceGroup().location
   sku: {
@@ -46,13 +46,13 @@ resource sb 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
   }
 }
 
-resource sbt 'Microsoft.ServiceBus/namespaces/topics@2024-01-01' = [for (t, i) in topics: {
-  parent: sb
+resource serviceBusTopics 'Microsoft.ServiceBus/namespaces/topics@2024-01-01' = [for (t, i) in topics: {
+  parent: serviceBusNamespace
   name: topicNames[i]
 }]
 
-resource sbts 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' = [for s in subscriptions: {
-  parent: sbt[s.topicIndex]
+resource serviceBusSubscriptions 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2024-01-01' = [for s in subscriptions: {
+  parent: serviceBusTopics[s.topicIndex]
   name: getServiceBusSubscriptionName(projectName, s.topic, s.subscription, environment)
   properties: {
     maxDeliveryCount: 10
