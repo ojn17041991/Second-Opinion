@@ -1,5 +1,6 @@
 using Azure.Core;
 using Azure.Identity;
+using Infrastructure.Extensions;
 using Messaging.ServiceBus.Extensions;
 using Secrets.KeyVault.Extensions;
 
@@ -25,6 +26,7 @@ else
 }
 
 builder.Services.AddHostedService<Worker.Worker>();
+builder.Services.AddWorkerServiceBus(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration, credential);
 builder.Services.AddSecrets(builder.Configuration, credential);
 
