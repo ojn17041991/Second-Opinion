@@ -33,6 +33,20 @@ public class ServiceBusMessageConsumer(
             throw new ArgumentException("Subscription cannot be null or empty.", nameof(subscription));
         }
 
+        // OJN: This is done to ensure that the message handler is registered before messages are consumed, however resolving the dependency twice is not ideal.
+        await using (var scope = scopeFactory.CreateAsyncScope())
+        {
+            var handler = scope.ServiceProvider.GetService<IMessageHandler>();
+            if (handler == null)
+            {
+                logger.LogError(
+                    "No message handler registered for topic {Topic} and subscription {Subscription}.",
+                    topic,
+                    subscription);
+                throw new InvalidOperationException("No message handler registered.");
+            }
+        }
+
         await using (var processor = client.CreateProcessor(
             topic,
             subscription,
@@ -43,15 +57,6 @@ public class ServiceBusMessageConsumer(
                 await using (var scope = scopeFactory.CreateAsyncScope())
                 {
                     var handler = scope.ServiceProvider.GetRequiredService<IMessageHandler>();
-                    if (handler == null)
-                    {
-                        logger.LogError(
-                            "No message handler registered for topic {Topic} and subscription {Subscription}.",
-                            topic,
-                            subscription);
-                        throw new InvalidOperationException("No message handler registered.");
-                    }
-
                     await handler.HandleAsync(args.Message.Body, args.CancellationToken);
                 }
             };

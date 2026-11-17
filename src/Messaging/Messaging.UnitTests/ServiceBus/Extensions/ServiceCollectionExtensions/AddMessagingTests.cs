@@ -1,14 +1,15 @@
 using Azure.Core;
 using Azure.Messaging.ServiceBus;
-using Messaging.ServiceBus;
 using Messaging.ServiceBus.Abstractions;
+using Messaging.ServiceBus.Extensions;
+using Messaging.ServiceBus.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace Messaging.UnitTests.ServiceBus.Extensions.ServiceCollectionExtensions;
 
-public class AddServiceBusMessagingTests
+public class AddMessagingTests
 {
     private readonly Mock<TokenCredential> _mockCredential = new();
 
@@ -20,27 +21,29 @@ public class AddServiceBusMessagingTests
     }
 
     [Fact]
-    public void AddServiceBusMessaging_WithValidConfiguration_RegistersServicesSuccessfully()
+    public void AddMessaging_WithValidConfiguration_RegistersServicesSuccessfully()
     {
         // Arrange
         var services = new ServiceCollection();
+        services.AddLogging();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
             { "Messaging:ServiceBus:FullyQualifiedNamespace", "test.servicebus.windows.net" }
         });
 
         // Act
-        var result = services.AddServiceBusMessaging(configuration, _mockCredential.Object);
+        var result = services.AddMessaging(configuration, _mockCredential.Object);
 
         // Assert
         Assert.Same(services, result);
         var provider = services.BuildServiceProvider();
         Assert.NotNull(provider.GetRequiredService<ServiceBusClient>());
         Assert.NotNull(provider.GetRequiredService<IMessagePublisher>());
+        Assert.NotNull(provider.GetRequiredService<IMessageConsumer>());
     }
 
     [Fact]
-    public void AddServiceBusMessaging_BindsOptionsFromConfiguration()
+    public void AddMessaging_BindsOptionsFromConfiguration()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -50,7 +53,7 @@ public class AddServiceBusMessagingTests
             { "Messaging:ServiceBus:FullyQualifiedNamespace", expectedNamespace }
         });
 
-        services.AddServiceBusMessaging(configuration, _mockCredential.Object);
+        services.AddMessaging(configuration, _mockCredential.Object);
         var provider = services.BuildServiceProvider();
 
         // Act
@@ -61,7 +64,7 @@ public class AddServiceBusMessagingTests
     }
 
     [Fact]
-    public void AddServiceBusMessaging_AllowsMethodChaining()
+    public void AddMessaging_AllowsMethodChaining()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -72,7 +75,7 @@ public class AddServiceBusMessagingTests
 
         // Act
         var result = services
-            .AddServiceBusMessaging(configuration, _mockCredential.Object)
+            .AddMessaging(configuration, _mockCredential.Object)
             .AddSingleton<IConfiguration>(configuration);
 
         // Assert
