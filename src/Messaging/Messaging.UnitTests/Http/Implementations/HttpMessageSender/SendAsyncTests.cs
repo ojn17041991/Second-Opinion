@@ -66,6 +66,39 @@ public class SendAsyncTests
     }
 
     [Fact]
+    public async Task SendAsync_WithoutMessage_SendsRequestWithNoBody()
+    {
+        // Arrange
+        var handler = new StubHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var sender = CreateSender(handler);
+
+        // Act
+        await sender.SendAsync(HttpMethod.Get, BaseAddress, "orders/42");
+
+        // Assert
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("https://host/api/orders/42", handler.Request.RequestUri!.AbsoluteUri);
+        Assert.Null(handler.RequestBody);
+    }
+
+    [Fact]
+    public async Task SendAsyncWithResponseWithoutMessage_ReturnsDeserialisedResponse()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"Id\":42}", Encoding.UTF8, "application/json")
+        };
+        var sender = CreateSender(new StubHandler(response));
+
+        // Act
+        var result = await sender.SendAsync<Reply>(HttpMethod.Get, BaseAddress, "orders/42");
+
+        // Assert
+        Assert.Equal(42, result.Id);
+    }
+
+    [Fact]
     public async Task SendAsync_WithNonSuccessStatus_ThrowsHttpRequestExceptionWithStatusCode()
     {
         // Arrange

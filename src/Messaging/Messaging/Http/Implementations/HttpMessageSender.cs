@@ -8,16 +8,33 @@ namespace Messaging.Http.Implementations;
 public class HttpMessageSender(IHttpClientFactory httpClientFactory) : IHttpMessageSender
 {
     /// <inheritdoc/>
+    public async Task SendAsync(HttpMethod method, Uri baseAddress, string route, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendRequestAsync(method, baseAddress, route, null, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TResponse> SendAsync<TResponse>(HttpMethod method, Uri baseAddress, string route, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendRequestAsync(method, baseAddress, route, null, cancellationToken);
+        return await ReadJsonAsync<TResponse>(response, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task SendAsync<TRequest>(HttpMethod method, Uri baseAddress, string route, TRequest message, CancellationToken cancellationToken = default)
     {
-        using var response = await SendRequestAsync(method, baseAddress, route, message, cancellationToken);
+        using var response = await SendRequestAsync(method, baseAddress, route, JsonContent.Create(message), cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<TResponse> SendAsync<TRequest, TResponse>(HttpMethod method, Uri baseAddress, string route, TRequest message, CancellationToken cancellationToken = default)
     {
-        using var response = await SendRequestAsync(method, baseAddress, route, message, cancellationToken);
+        using var response = await SendRequestAsync(method, baseAddress, route, JsonContent.Create(message), cancellationToken);
+        return await ReadJsonAsync<TResponse>(response, cancellationToken);
+    }
 
+    private static async Task<TResponse> ReadJsonAsync<TResponse>(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
         if (response.Content.Headers.ContentType?.MediaType != "application/json")
         {
             throw new HttpRequestException(
@@ -30,14 +47,15 @@ public class HttpMessageSender(IHttpClientFactory httpClientFactory) : IHttpMess
         return result ?? throw new HttpRequestException("Response body was empty.", null, response.StatusCode);
     }
 
-    private async Task<HttpResponseMessage> SendRequestAsync<TRequest>(HttpMethod method, Uri baseAddress, string route, TRequest message, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> SendRequestAsync(HttpMethod method, Uri baseAddress, string route, HttpContent? content, CancellationToken cancellationToken)
     {
         var uri = UriHelper.Combine(baseAddress, route);
 
         using var request = new HttpRequestMessage(method, uri)
         {
-            Content = JsonContent.Create(message)
+            Content = content
         };
+
 
         var client = httpClientFactory.CreateClient();
         var response = await client.SendAsync(request, cancellationToken);

@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
     /// <param name="configuration">The application configuration containing the ServiceBusOptions section.</param>
     /// <param name="credential">The token credential used to authenticate the ServiceBusClient.</param>
     /// <returns>The same service collection so that additional registrations can be chained.</returns>
-    public static IServiceCollection AddMessaging(
+    public static IServiceCollection AddMessagingServiceBus(
         this IServiceCollection services,
         IConfiguration configuration,
         TokenCredential credential)
