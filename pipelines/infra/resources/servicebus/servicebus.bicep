@@ -55,7 +55,7 @@ resource serviceBusSubscriptions 'Microsoft.ServiceBus/namespaces/topics/subscri
   parent: serviceBusTopics[s.topicIndex]
   name: getServiceBusSubscriptionName(projectName, s.topic, s.subscription, environment)
   properties: {
-    maxDeliveryCount: 10
+    maxDeliveryCount: 3
     deadLetteringOnMessageExpiration: true
     lockDuration: 'PT5M'
   }
