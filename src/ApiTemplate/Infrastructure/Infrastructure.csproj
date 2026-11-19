@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\Application.csproj" />
+    <PackageReference Include="Azure.Identity" Version="*" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="*" />
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="*" />
+    <ProjectReference Include="..\..\Contracts\Contracts\Contracts.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

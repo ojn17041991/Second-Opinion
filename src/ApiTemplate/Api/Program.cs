@@ -1,5 +1,6 @@
 using Azure.Core;
 using Azure.Identity;
+using Messaging.Http.Extensions;
 using Messaging.ServiceBus.Extensions;
 using Scalar.AspNetCore;
 using Secrets.KeyVault.Extensions;
@@ -35,8 +36,9 @@ builder.Services
         )
     );
 
-builder.Services.AddMessaging(builder.Configuration, credential);
 builder.Services.AddOpenApi();
+builder.Services.AddMessagingServiceBus(builder.Configuration, credential);
+builder.Services.AddMessagingHttp();
 builder.Services.AddSecrets(builder.Configuration, credential);
 
 var app = builder.Build();

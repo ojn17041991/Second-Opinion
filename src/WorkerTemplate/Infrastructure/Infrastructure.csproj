@@ -4,7 +4,6 @@
     <ProjectReference Include="..\..\Configuration\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\..\Contracts\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Messaging\Messaging\Messaging.csproj" />
-    <ProjectReference Include="..\Application\Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
