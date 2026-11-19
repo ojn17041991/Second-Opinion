@@ -134,7 +134,7 @@ if (-not (Test-Path "..\..\src\WorkerTemplate")) {
     dotnet add ..\..\src\WorkerTemplate\Infrastructure\Infrastructure.csproj package Azure.Messaging.ServiceBus --no-restore
 
     dotnet restore ..\..\src\WorkerTemplate\WorkerTemplate.slnx
-    New-Item -ItemType File -Path "..\..\src\WorkerTemplate\Dockerfile" | Out-Null
+    New-Item -ItemType File -Path "..\..\src\WorkerTemplate\Worker\Dockerfile" | Out-Null
 } else {
     Write-Host "WorkerTemplate already exists."
 }
@@ -201,7 +201,7 @@ if (-not (Test-Path "..\..\src\ApiTemplate")) {
     dotnet add ..\..\src\ApiTemplate\Infrastructure\Infrastructure.csproj package Azure.Messaging.ServiceBus --no-restore
 
     dotnet restore ..\..\src\ApiTemplate\ApiTemplate.slnx
-    New-Item -ItemType File -Path "..\..\src\ApiTemplate\Dockerfile" | Out-Null
+    New-Item -ItemType File -Path "..\..\src\ApiTemplate\Api\Dockerfile" | Out-Null
 } else {
     Write-Host "ApiTemplate already exists."
 }

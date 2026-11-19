@@ -29,15 +29,21 @@ $images = @()
 foreach ($service in $services) {
 	$serviceName = $service.name.ToLower()
 	$image = "${registry}/${serviceName}:$tag"
-	$dockerfilePath = Join-Path -Path (Join-Path -Path $repoRoot -ChildPath "src") -ChildPath $service.name
+	$serviceRoot = Join-Path -Path (Join-Path -Path $repoRoot -ChildPath "src") -ChildPath $service.name
+	$dockerfileCandidates = @(
+		(Join-Path -Path $serviceRoot -ChildPath "Api/Dockerfile"),
+		(Join-Path -Path $serviceRoot -ChildPath "Worker/Dockerfile"),
+		(Join-Path -Path $serviceRoot -ChildPath "Dockerfile")
+	)
+	$dockerfile = $dockerfileCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-	if (-not (Test-Path "$dockerfilePath/Dockerfile")) {
-		Write-Error "Dockerfile not found at $dockerfilePath/Dockerfile."
+	if (-not $dockerfile) {
+		Write-Error "No Dockerfile found for $serviceName. Checked: $($dockerfileCandidates -join ', ')"
 		Pop-Location
 		exit 1
 	}
 
-	docker build -f "$dockerfilePath/Dockerfile" -t $image .
+	docker build -f $dockerfile -t $image .
 	if ($LASTEXITCODE -ne 0) {
 		Write-Error "Docker build failed for $serviceName."
 		Pop-Location
