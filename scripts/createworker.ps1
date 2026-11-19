@@ -5,7 +5,7 @@ param(
 )
 
 $TemplateName = 'WorkerTemplate'
-$RepoRootLocation = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$RepoRootLocation = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $WorkerTemplateLocation = Join-Path $RepoRootLocation "src/$TemplateName"
 $NewWorkerLocation = Join-Path $RepoRootLocation "src/$Name"
 

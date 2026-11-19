@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/shared/">
+    <Project Path="../Configuration/Configuration/Configuration.csproj" />
     <Project Path="../Contracts/Contracts/Contracts.csproj" />
     <Project Path="../Messaging/Messaging/Messaging.csproj" />
     <Project Path="../Secrets/Secrets/Secrets.csproj" />
